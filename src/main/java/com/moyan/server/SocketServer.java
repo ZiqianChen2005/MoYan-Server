@@ -3,7 +3,7 @@ package com.moyan.server;
 import com.moyan.controller.RequestHandler;
 import java.io.*;
 import java.net.*;
-
+//服务器
 public class SocketServer {
     private static final int PORT = 8888;
     private static RequestHandler handler = new RequestHandler();
