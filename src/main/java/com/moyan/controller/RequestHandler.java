@@ -1,31 +1,31 @@
 package com.moyan.controller;
 
 import com.google.gson.Gson;
-import com.moyan.entity.Response;
+import com.moyan.dto.Response;
 import com.moyan.service.*;
-import java.util.HashMap;
+import com.moyan.service.impl.*;
 import java.util.Map;
 
 public class RequestHandler {
-    private Gson gson = new Gson();
-//    private UserService userService = new UserService();
-//    private PostService postService = new PostService();
-//    private ReplyService replyService = new ReplyService();
-//    private RatingService ratingService = new RatingService();
-//    private TipService tipService = new TipService();
-//    private ReportService reportService = new ReportService();
-//    private TaskService taskService = new TaskService();
     
-    /**
-     * 处理客户端请求
-     * @param requestJson 格式: {"action":"login", "params":{...}}
-     * @return 响应JSON
-     */
+    private Gson gson = new Gson();
+    
+    private UserService userService = new UserServiceImpl();
+    private PostService postService = new PostServiceImpl();
+    private ReplyService replyService = new ReplyServiceImpl();
+    private RatingService ratingService = new RatingServiceImpl();
+    private TipService tipService = new TipServiceImpl();
+    private ReportService reportService = new ReportServiceImpl();
+    private DailyTaskService taskService = new DailyTaskServiceImpl();
+    
+    @SuppressWarnings("unchecked")
     public String handle(String requestJson) {
         try {
             Map<String, Object> request = gson.fromJson(requestJson, Map.class);
             String action = (String) request.get("action");
             Map<String, Object> params = (Map<String, Object>) request.get("params");
+            
+            System.out.println("处理请求: " + action);
             
             switch (action) {
                 // 用户相关
@@ -49,12 +49,20 @@ public class RequestHandler {
                     return handleGetPostDetail(params);
                 case "searchPosts":
                     return handleSearchPosts(params);
+                case "approvePost":
+                    return handleApprovePost(params);
+                case "rejectPost":
+                    return handleRejectPost(params);
                     
                 // 回复相关
                 case "createReply":
                     return handleCreateReply(params);
                 case "getReplies":
                     return handleGetReplies(params);
+                case "approveReply":
+                    return handleApproveReply(params);
+                case "rejectReply":
+                    return handleRejectReply(params);
                     
                 // 评分打赏
                 case "ratePost":
@@ -65,14 +73,26 @@ public class RequestHandler {
                 // 举报
                 case "report":
                     return handleReport(params);
+                case "handleReport":
+                    return handleHandleReport(params);
                     
                 // 互动任务
-                case "getDailyTask":
-                    return handleGetDailyTask(params);
+                case "getTodayTask":
+                    return handleGetTodayTask(params);
                 case "submitTaskAnswer":
                     return handleSubmitTaskAnswer(params);
                 case "getTopAnswers":
                     return handleGetTopAnswers(params);
+                case "hasSubmitted":
+                    return handleHasSubmitted(params);
+                    
+                // 用户管理
+                case "addWarning":
+                    return handleAddWarning(params);
+                case "banUser":
+                    return handleBanUser(params);
+                case "unbanUser":
+                    return handleUnbanUser(params);
                     
                 default:
                     return gson.toJson(Response.fail("未知操作: " + action));
@@ -87,129 +107,208 @@ public class RequestHandler {
     
     private String handleLogin(Map<String, Object> params) {
         String phone = (String) params.get("phone");
-        // 测试阶段验证码固定123456
         String code = (String) params.get("code");
-        if (!"123456".equals(code)) {
-            return gson.toJson(Response.fail("验证码错误"));
-        }
-        return gson.toJson(userService.login(phone));
+        Response<?> resp = userService.login(phone, code);
+        return gson.toJson(resp);
     }
     
     private String handleRegister(Map<String, Object> params) {
         String phone = (String) params.get("phone");
         String nickname = (String) params.get("nickname");
-        return gson.toJson(userService.register(phone, nickname));
+        Response<?> resp = userService.register(phone, nickname);
+        return gson.toJson(resp);
     }
     
     private String handleGetUserInfo(Map<String, Object> params) {
-        int userId = ((Double) params.get("userId")).intValue();
-        return gson.toJson(userService.getUserInfo(userId));
+        Integer userId = ((Double) params.get("userId")).intValue();
+        Response<?> resp = userService.getUserInfo(userId);
+        return gson.toJson(resp);
     }
     
     private String handleUpdateNickname(Map<String, Object> params) {
-        int userId = ((Double) params.get("userId")).intValue();
+        Integer userId = ((Double) params.get("userId")).intValue();
         String nickname = (String) params.get("nickname");
-        return gson.toJson(userService.updateNickname(userId, nickname));
+        Response<?> resp = userService.updateNickname(userId, nickname);
+        return gson.toJson(resp);
     }
     
     private String handleUpdateAvatar(Map<String, Object> params) {
-        int userId = ((Double) params.get("userId")).intValue();
+        Integer userId = ((Double) params.get("userId")).intValue();
         String avatarUrl = (String) params.get("avatarUrl");
-        return gson.toJson(userService.updateAvatar(userId, avatarUrl));
+        Response<?> resp = userService.updateAvatar(userId, avatarUrl);
+        return gson.toJson(resp);
     }
     
     // ==================== 帖子相关 ====================
     
     private String handleCreatePost(Map<String, Object> params) {
-        int userId = ((Double) params.get("userId")).intValue();
-        boolean isAnonymous = (boolean) params.getOrDefault("isAnonymous", false);
+        Integer userId = ((Double) params.get("userId")).intValue();
+        Boolean isAnonymous = (Boolean) params.getOrDefault("isAnonymous", false);
         String title = (String) params.get("title");
         String content = (String) params.get("content");
         String tags = (String) params.get("tags");
-        return gson.toJson(postService.createPost(userId, isAnonymous, title, content, tags));
+        Response<?> resp = postService.createPost(userId, isAnonymous, title, content, tags);
+        return gson.toJson(resp);
     }
     
     private String handleGetPostList(Map<String, Object> params) {
-        int page = ((Double) params.getOrDefault("page", 1)).intValue();
-        int size = ((Double) params.getOrDefault("size", 20)).intValue();
-        return gson.toJson(postService.getPostList(page, size));
+        Integer page = params.get("page") != null ? ((Double) params.get("page")).intValue() : 1;
+        Integer size = params.get("size") != null ? ((Double) params.get("size")).intValue() : 20;
+        Integer currentUserId = params.get("userId") != null ? ((Double) params.get("userId")).intValue() : null;
+        Response<?> resp = postService.getPostList(page, size, currentUserId);
+        return gson.toJson(resp);
     }
     
     private String handleGetPostDetail(Map<String, Object> params) {
-        int postId = ((Double) params.get("postId")).intValue();
-        int currentUserId = params.containsKey("userId") ? 
-            ((Double) params.get("userId")).intValue() : -1;
-        return gson.toJson(postService.getPostDetail(postId, currentUserId));
+        Integer postId = ((Double) params.get("postId")).intValue();
+        Integer currentUserId = params.get("userId") != null ? ((Double) params.get("userId")).intValue() : null;
+        Response<?> resp = postService.getPostDetail(postId, currentUserId);
+        return gson.toJson(resp);
     }
     
     private String handleSearchPosts(Map<String, Object> params) {
         String keyword = (String) params.get("keyword");
         String tag = (String) params.get("tag");
         String sortBy = (String) params.getOrDefault("sortBy", "time");
-        int page = ((Double) params.getOrDefault("page", 1)).intValue();
-        return gson.toJson(postService.searchPosts(keyword, tag, sortBy, page));
+        Integer page = params.get("page") != null ? ((Double) params.get("page")).intValue() : 1;
+        Response<?> resp = postService.searchPosts(keyword, tag, sortBy, page);
+        return gson.toJson(resp);
+    }
+    
+    private String handleApprovePost(Map<String, Object> params) {
+        Integer postId = ((Double) params.get("postId")).intValue();
+        Integer adminId = ((Double) params.get("adminId")).intValue();
+        Response<?> resp = postService.approvePost(postId, adminId);
+        return gson.toJson(resp);
+    }
+    
+    private String handleRejectPost(Map<String, Object> params) {
+        Integer postId = ((Double) params.get("postId")).intValue();
+        Integer adminId = ((Double) params.get("adminId")).intValue();
+        String reason = (String) params.get("reason");
+        Response<?> resp = postService.rejectPost(postId, adminId, reason);
+        return gson.toJson(resp);
     }
     
     // ==================== 回复相关 ====================
     
     private String handleCreateReply(Map<String, Object> params) {
-        int postId = ((Double) params.get("postId")).intValue();
-        int userId = ((Double) params.get("userId")).intValue();
-        boolean isAnonymous = (boolean) params.getOrDefault("isAnonymous", false);
+        Integer postId = ((Double) params.get("postId")).intValue();
+        Integer userId = ((Double) params.get("userId")).intValue();
+        Boolean isAnonymous = (Boolean) params.getOrDefault("isAnonymous", false);
         String content = (String) params.get("content");
-        return gson.toJson(replyService.createReply(postId, userId, isAnonymous, content));
+        Response<?> resp = replyService.createReply(postId, userId, isAnonymous, content);
+        return gson.toJson(resp);
     }
     
     private String handleGetReplies(Map<String, Object> params) {
-        int postId = ((Double) params.get("postId")).intValue();
-        int page = ((Double) params.getOrDefault("page", 1)).intValue();
-        return gson.toJson(replyService.getReplies(postId, page));
+        Integer postId = ((Double) params.get("postId")).intValue();
+        Integer page = params.get("page") != null ? ((Double) params.get("page")).intValue() : 1;
+        Response<?> resp = replyService.getReplies(postId, page);
+        return gson.toJson(resp);
+    }
+    
+    private String handleApproveReply(Map<String, Object> params) {
+        Integer replyId = ((Double) params.get("replyId")).intValue();
+        Integer adminId = ((Double) params.get("adminId")).intValue();
+        Response<?> resp = replyService.approveReply(replyId, adminId);
+        return gson.toJson(resp);
+    }
+    
+    private String handleRejectReply(Map<String, Object> params) {
+        Integer replyId = ((Double) params.get("replyId")).intValue();
+        Integer adminId = ((Double) params.get("adminId")).intValue();
+        String reason = (String) params.get("reason");
+        Response<?> resp = replyService.rejectReply(replyId, adminId, reason);
+        return gson.toJson(resp);
     }
     
     // ==================== 评分打赏 ====================
     
     private String handleRatePost(Map<String, Object> params) {
-        int postId = ((Double) params.get("postId")).intValue();
-        int userId = ((Double) params.get("userId")).intValue();
-        int tagAccuracy = ((Double) params.get("tagAccuracy")).intValue();
-        int articleScore = ((Double) params.get("articleScore")).intValue();
+        Integer postId = ((Double) params.get("postId")).intValue();
+        Integer userId = ((Double) params.get("userId")).intValue();
+        Integer tagAccuracy = ((Double) params.get("tagAccuracy")).intValue();
+        Integer articleScore = ((Double) params.get("articleScore")).intValue();
         String comment = (String) params.get("comment");
-        return gson.toJson(ratingService.ratePost(postId, userId, tagAccuracy, articleScore, comment));
+        Response<?> resp = ratingService.ratePost(postId, userId, tagAccuracy, articleScore, comment);
+        return gson.toJson(resp);
     }
     
     private String handleTipPost(Map<String, Object> params) {
-        int postId = ((Double) params.get("postId")).intValue();
-        int fromUserId = ((Double) params.get("fromUserId")).intValue();
-        double amount = ((Double) params.get("amount")).doubleValue();
-        return gson.toJson(tipService.tipPost(postId, fromUserId, amount));
+        Integer postId = ((Double) params.get("postId")).intValue();
+        Integer fromUserId = ((Double) params.get("fromUserId")).intValue();
+        java.math.BigDecimal amount = new java.math.BigDecimal(params.get("amount").toString());
+        Response<?> resp = tipService.tipPost(postId, fromUserId, amount);
+        return gson.toJson(resp);
     }
     
     // ==================== 举报 ====================
     
     private String handleReport(Map<String, Object> params) {
-        int reporterId = ((Double) params.get("reporterId")).intValue();
-        int targetType = ((Double) params.get("targetType")).intValue();
-        int targetId = ((Double) params.get("targetId")).intValue();
+        Integer reporterId = ((Double) params.get("reporterId")).intValue();
+        Integer targetType = ((Double) params.get("targetType")).intValue();
+        Integer targetId = ((Double) params.get("targetId")).intValue();
         String reason = (String) params.get("reason");
-        return gson.toJson(reportService.report(reporterId, targetType, targetId, reason));
+        Response<?> resp = reportService.report(reporterId, targetType, targetId, reason);
+        return gson.toJson(resp);
+    }
+    
+    private String handleHandleReport(Map<String, Object> params) {
+        Integer reportId = ((Double) params.get("reportId")).intValue();
+        Integer handlerId = ((Double) params.get("handlerId")).intValue();
+        Integer action = ((Double) params.get("action")).intValue();
+        String note = (String) params.get("note");
+        Response<?> resp = reportService.handleReport(reportId, handlerId, action, note);
+        return gson.toJson(resp);
     }
     
     // ==================== 互动任务 ====================
     
-    private String handleGetDailyTask(Map<String, Object> params) {
-        return gson.toJson(taskService.getTodayTask());
+    private String handleGetTodayTask(Map<String, Object> params) {
+        Response<?> resp = taskService.getTodayTask();
+        return gson.toJson(resp);
     }
     
     private String handleSubmitTaskAnswer(Map<String, Object> params) {
-        int taskId = ((Double) params.get("taskId")).intValue();
-        int userId = ((Double) params.get("userId")).intValue();
+        Integer taskId = ((Double) params.get("taskId")).intValue();
+        Integer userId = ((Double) params.get("userId")).intValue();
         String content = (String) params.get("content");
-        return gson.toJson(taskService.submitAnswer(taskId, userId, content));
+        Response<?> resp = taskService.submitAnswer(taskId, userId, content);
+        return gson.toJson(resp);
     }
     
     private String handleGetTopAnswers(Map<String, Object> params) {
-        int taskId = ((Double) params.get("taskId")).intValue();
-        int limit = ((Double) params.getOrDefault("limit", 3)).intValue();
-        return gson.toJson(taskService.getTopAnswers(taskId, limit));
+        Integer taskId = ((Double) params.get("taskId")).intValue();
+        Integer limit = params.get("limit") != null ? ((Double) params.get("limit")).intValue() : 3;
+        Response<?> resp = taskService.getTopAnswers(taskId, limit);
+        return gson.toJson(resp);
+    }
+    
+    private String handleHasSubmitted(Map<String, Object> params) {
+        Integer taskId = ((Double) params.get("taskId")).intValue();
+        Integer userId = ((Double) params.get("userId")).intValue();
+        Response<?> resp = taskService.hasSubmitted(taskId, userId);
+        return gson.toJson(resp);
+    }
+    
+    // ==================== 用户管理 ====================
+    
+    private String handleAddWarning(Map<String, Object> params) {
+        Integer userId = ((Double) params.get("userId")).intValue();
+        Response<?> resp = userService.addWarning(userId);
+        return gson.toJson(resp);
+    }
+    
+    private String handleBanUser(Map<String, Object> params) {
+        Integer userId = ((Double) params.get("userId")).intValue();
+        Response<?> resp = userService.banUser(userId);
+        return gson.toJson(resp);
+    }
+    
+    private String handleUnbanUser(Map<String, Object> params) {
+        Integer userId = ((Double) params.get("userId")).intValue();
+        Response<?> resp = userService.unbanUser(userId);
+        return gson.toJson(resp);
     }
 }
