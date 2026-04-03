@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>出版社管理</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <style>
+        .publisher-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            transition: all 0.3s;
+            background: white;
+        }
+        .publisher-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .publisher-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+        .publisher-logo {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+        }
+        .publisher-info {
+            flex: 1;
+            margin-left: 16px;
+        }
+        .publisher-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .publisher-contact {
+            font-size: 13px;
+            color: #666;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+        .status-verified { background: #e8f5e9; color: #388e3c; }
+        .status-pending { background: #fff3e0; color: #f57c00; }
+        .status-suspended { background: #ffebee; color: #d32f2f; }
+        .contract-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        .contract-title {
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        .contract-meta {
+            font-size: 12px;
+            color: #666;
+            display: flex;
+            gap: 16px;
+        }
+        .stats-row {
+            display: flex;
+            gap: 24px;
+            margin: 16px 0;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: #667eea;
+        }
+        .stat-label-sm {
+            font-size: 11px;
+            color: #999;
+        }
+        .cooperation-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .filter-bar {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .search-input {
+            flex: 1;
+            max-width: 300px;
+        }
+        .tabs {
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+            display: flex;
+            gap: 0;
+        }
+        .tab {
+            display: inline-block;
+            padding: 10px 24px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .tab.active {
+            color: #667eea;
+            border-bottom: 2px solid #667eea;
+            margin-bottom: -2px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div style="padding: 20px;">
+        <!-- 头部操作栏 -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4><i class="bi bi-building"></i> 出版社合作管理</h4>
+            <button class="btn btn-primary" onclick="openAddPublisherModal()">
+                <i class="bi bi-plus-circle"></i> 添加出版社
+            </button>
+        </div>
+
+        <!-- 标签页 -->
+        <div class="tabs">
+            <div class="tab active" data-status="all">全部出版社</div>
+            <div class="tab" data-status="verified">已认证</div>
+            <div class="tab" data-status="pending">待审核</div>
+            <div class="tab" data-status="suspended">已暂停</div>
+        </div>
+
+        <!-- 筛选栏 -->
+        <div class="filter-bar">
+            <input type="text" class="form-control search-input" id="searchInput" placeholder="搜索出版社名称或联系人">
+            <button class="btn btn-outline-primary" onclick="searchPublishers()">
+                <i class="bi bi-search"></i> 搜索
+            </button>
+            <button class="btn btn-outline-secondary" onclick="resetFilter()">
+                <i class="bi bi-arrow-repeat"></i> 重置
+            </button>
+        </div>
+
+        <!-- 出版社列表 -->
+        <div id="publishersList"></div>
+    </div>
+
+    <!-- 添加/编辑出版社弹窗 -->
+    <div class="modal fade" id="publisherModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">添加出版社</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">出版社名称 *</label>
+                        <input type="text" class="form-control" id="pubName" placeholder="请输入出版社名称">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">联系人</label>
+                        <input type="text" class="form-control" id="pubContact" placeholder="联系人姓名">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">联系电话</label>
+                        <input type="tel" class="form-control" id="pubPhone" placeholder="联系电话">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">电子邮箱</label>
+                        <input type="email" class="form-control" id="pubEmail" placeholder="email@example.com">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">认证状态</label>
+                        <select class="form-select" id="pubStatus">
+                            <option value="pending">待审核</option>
+                            <option value="verified">已认证</option>
+                            <option value="suspended">已暂停</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">备注</label>
+                        <textarea class="form-control" id="pubRemark" rows="2" placeholder="备注信息"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="savePublisher()">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 签约详情弹窗 -->
+    <div class="modal fade" id="contractModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">签约记录</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="contractContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let publishers = [];
+        let currentFilter = 'all';
+        let currentEditId = null;
+        let publisherModal = null;
+        let contractModal = null;
+
+        // 模拟数据
+        const mockPublishers = [
+            {
+                id: 1,
+                name: '人民文学出版社',
+                contact: '张建国',
+                phone: '010-12345678',
+                email: 'zhang@rmwx.com',
+                status: 'verified',
+                registerTime: '2024-02-01',
+                remark: '国内顶级文学出版社',
+                contractCount: 3,
+                totalSignFee: 125000,
+                contracts: [
+                    { contractId: 'C001', writerName: '诗人小张', bookName: '《秋日诗选》', signDate: '2024-03-15', fee: 50000, status: '已签约' },
+                    { contractId: 'C002', writerName: '夜行者', bookName: '《城市夜话》', signDate: '2024-03-20', fee: 45000, status: '已签约' },
+                    { contractId: 'C003', writerName: '小确幸', bookName: '《春天的约定》', signDate: '2024-03-28', fee: 30000, status: '洽谈中' }
+                ]
+            },
+            {
+                id: 2,
+                name: '上海文艺出版社',
+                contact: '李华',
+                phone: '021-87654321',
+                email: 'lihua@shwy.com',
+                status: 'verified',
+                registerTime: '2024-02-15',
+                remark: '专注文艺类图书',
+                contractCount: 2,
+                totalSignFee: 68000,
+                contracts: [
+                    { contractId: 'C004', writerName: '墨香', bookName: '《墨香随笔》', signDate: '2024-03-10', fee: 38000, status: '已签约' },
+                    { contractId: 'C005', writerName: '清风徐来', bookName: '《风起的时候》', signDate: '2024-03-25', fee: 30000, status: '已签约' }
+                ]
+            },
+            {
+                id: 3,
+                name: '磨铁图书',
+                contact: '王明',
+                phone: '010-99887766',
+                email: 'wangming@motie.com',
+                status: 'pending',
+                registerTime: '2024-03-20',
+                remark: '申请入驻审核中',
+                contractCount: 0,
+                totalSignFee: 0,
+                contracts: []
+            },
+            {
+                id: 4,
+                name: '读客文化',
+                contact: '陈芳',
+                phone: '021-66554433',
+                email: 'chenfang@duke.com',
+                status: 'suspended',
+                registerTime: '2024-01-10',
+                remark: '因违规操作暂停合作',
+                contractCount: 1,
+                totalSignFee: 25000,
+                contracts: [
+                    { contractId: 'C006', writerName: '梦里花落', bookName: '《梦回江南》', signDate: '2024-02-01', fee: 25000, status: '已签约' }
+                ]
+            }
+        ];
+
+        function loadPublishers() {
+            let filtered = [...mockPublishers];
+            if (currentFilter !== 'all') {
+                filtered = filtered.filter(p => p.status === currentFilter);
+            }
+            publishers = filtered;
+            renderPublishers();
+        }
+
+        function renderPublishers() {
+            const container = document.getElementById('publishersList');
+            if (publishers.length === 0) {
+                container.innerHTML = '<div class="text-center text-muted" style="padding: 60px;">📚 暂无出版社数据</div>';
+                return;
+            }
+
+            container.innerHTML = publishers.map(pub => {
+                let statusClass = '';
+                let statusText = '';
+                switch(pub.status) {
+                    case 'verified': statusClass = 'status-verified'; statusText = '已认证'; break;
+                    case 'pending': statusClass = 'status-pending'; statusText = '待审核'; break;
+                    case 'suspended': statusClass = 'status-suspended'; statusText = '已暂停'; break;
+                }
+                return `
+                    <div class="publisher-card">
+                        <div class="publisher-header">
+                            <div style="display: flex; align-items: center;">
+                                <div class="publisher-logo">
+                                    <i class="bi bi-building"></i>
+                                </div>
+                                <div class="publisher-info">
+                                    <div class="publisher-name">${escapeHtml(pub.name)}</div>
+                                    <div class="publisher-contact">
+                                        联系人：${escapeHtml(pub.contact)} | ${pub.phone} | ${pub.email}
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <span class="status-badge ${statusClass}">${statusText}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="stats-row">
+                            <div class="stat-item">
+                                <div class="stat-number">${pub.contractCount}</div>
+                                <div class="stat-label-sm">签约作者</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">¥${(pub.totalSignFee / 10000).toFixed(1)}w</div>
+                                <div class="stat-label-sm">签约总额</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">${pub.registerTime}</div>
+                                <div class="stat-label-sm">入驻时间</div>
+                            </div>
+                        </div>
+                        
+                        ${pub.remark ? `<div class="text-muted small mb-2"><i class="bi bi-info-circle"></i> ${escapeHtml(pub.remark)}</div>` : ''}
+                        
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <button class="btn btn-sm btn-outline-info" onclick="viewContracts(${pub.id})">
+                                <i class="bi bi-file-text"></i> 查看签约记录 (${pub.contractCount})
+                            </button>
+                            <div>
+                                ${pub.status === 'pending' ? `
+                                    <button class="btn btn-sm btn-outline-success" onclick="verifyPublisher(${pub.id})">
+                                        <i class="bi bi-check-circle"></i> 认证通过
+                                    </button>
+                                ` : ''}
+                                ${pub.status === 'verified' ? `
+                                    <button class="btn btn-sm btn-outline-warning" onclick="suspendPublisher(${pub.id})">
+                                        <i class="bi bi-pause-circle"></i> 暂停合作
+                                    </button>
+                                ` : pub.status === 'suspended' ? `
+                                    <button class="btn btn-sm btn-outline-success" onclick="restorePublisher(${pub.id})">
+                                        <i class="bi bi-play-circle"></i> 恢复合作
+                                    </button>
+                                ` : ''}
+                                <button class="btn btn-sm btn-outline-secondary" onclick="editPublisher(${pub.id})">
+                                    <i class="bi bi-pencil"></i> 编辑
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function viewContracts(pubId) {
+            const pub = mockPublishers.find(p => p.id === pubId);
+            if (pub && pub.contracts.length > 0) {
+                document.getElementById('contractContent').innerHTML = `
+                    <div class="mb-3">
+                        <h6>出版社：${escapeHtml(pub.name)}</h6>
+                        <p class="text-muted small">共计 ${pub.contractCount} 笔签约，总金额 ¥${pub.totalSignFee.toLocaleString()}</p>
+                    </div>
+                    <div class="cooperation-list">
+                        ${pub.contracts.map(c => `
+                            <div class="contract-item">
+                                <div class="contract-title">
+                                    ${escapeHtml(c.bookName)} - ${escapeHtml(c.writerName)}
+                                </div>
+                                <div class="contract-meta">
+                                    <span>合同号：${c.contractId}</span>
+                                    <span>签约日期：${c.signDate}</span>
+                                    <span>金额：¥${c.fee.toLocaleString()}</span>
+                                    <span class="text-success">${c.status}</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            } else {
+                document.getElementById('contractContent').innerHTML = '<div class="text-center text-muted py-4">暂无签约记录</div>';
+            }
+            contractModal.show();
+        }
+
+        function verifyPublisher(pubId) {
+            if (confirm('确认认证通过该出版社吗？')) {
+                const pub = mockPublishers.find(p => p.id === pubId);
+                if (pub) {
+                    pub.status = 'verified';
+                    loadPublishers();
+                    alert('认证通过成功');
+                }
+            }
+        }
+
+        function suspendPublisher(pubId) {
+            if (confirm('确认暂停与该出版社的合作吗？')) {
+                const pub = mockPublishers.find(p => p.id === pubId);
+                if (pub) {
+                    pub.status = 'suspended';
+                    loadPublishers();
+                    alert('已暂停合作');
+                }
+            }
+        }
+
+        function restorePublisher(pubId) {
+            if (confirm('确认恢复与该出版社的合作吗？')) {
+                const pub = mockPublishers.find(p => p.id === pubId);
+                if (pub) {
+                    pub.status = 'verified';
+                    loadPublishers();
+                    alert('已恢复合作');
+                }
+            }
+        }
+
+        function openAddPublisherModal() {
+            currentEditId = null;
+            document.getElementById('modalTitle').textContent = '添加出版社';
+            document.getElementById('pubName').value = '';
+            document.getElementById('pubContact').value = '';
+            document.getElementById('pubPhone').value = '';
+            document.getElementById('pubEmail').value = '';
+            document.getElementById('pubStatus').value = 'pending';
+            document.getElementById('pubRemark').value = '';
+            publisherModal.show();
+        }
+
+        function editPublisher(pubId) {
+            const pub = mockPublishers.find(p => p.id === pubId);
+            if (pub) {
+                currentEditId = pubId;
+                document.getElementById('modalTitle').textContent = '编辑出版社';
+                document.getElementById('pubName').value = pub.name;
+                document.getElementById('pubContact').value = pub.contact || '';
+                document.getElementById('pubPhone').value = pub.phone || '';
+                document.getElementById('pubEmail').value = pub.email || '';
+                document.getElementById('pubStatus').value = pub.status;
+                document.getElementById('pubRemark').value = pub.remark || '';
+                publisherModal.show();
+            }
+        }
+
+        function savePublisher() {
+            const name = document.getElementById('pubName').value.trim();
+            if (!name) {
+                alert('请输入出版社名称');
+                return;
+            }
+            
+            const publisherData = {
+                name: name,
+                contact: document.getElementById('pubContact').value,
+                phone: document.getElementById('pubPhone').value,
+                email: document.getElementById('pubEmail').value,
+                status: document.getElementById('pubStatus').value,
+                remark: document.getElementById('pubRemark').value
+            };
+            
+            if (currentEditId) {
+                const index = mockPublishers.findIndex(p => p.id === currentEditId);
+                if (index !== -1) {
+                    mockPublishers[index] = { ...mockPublishers[index], ...publisherData };
+                    alert('编辑成功');
+                }
+            } else {
+                const newId = Math.max(...mockPublishers.map(p => p.id), 0) + 1;
+                mockPublishers.push({
+                    id: newId,
+                    ...publisherData,
+                    registerTime: new Date().toISOString().split('T')[0],
+                    contractCount: 0,
+                    totalSignFee: 0,
+                    contracts: []
+                });
+                alert('添加成功');
+            }
+            
+            publisherModal.hide();
+            loadPublishers();
+        }
+
+        function searchPublishers() {
+            const keyword = document.getElementById('searchInput').value.toLowerCase();
+            let filtered = mockPublishers.filter(p => 
+                p.name.toLowerCase().includes(keyword) ||
+                (p.contact && p.contact.toLowerCase().includes(keyword)) ||
+                (p.phone && p.phone.includes(keyword))
+            );
+            if (currentFilter !== 'all') {
+                filtered = filtered.filter(p => p.status === currentFilter);
+            }
+            publishers = filtered;
+            renderPublishers();
+        }
+
+        function resetFilter() {
+            document.getElementById('searchInput').value = '';
+            loadPublishers();
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        // 标签页切换
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                currentFilter = this.getAttribute('data-status');
+                loadPublishers();
+            });
+        });
+
+        publisherModal = new bootstrap.Modal(document.getElementById('publisherModal'));
+        contractModal = new bootstrap.Modal(document.getElementById('contractModal'));
+        loadPublishers();
+    </script>
+</body>
+</html>
