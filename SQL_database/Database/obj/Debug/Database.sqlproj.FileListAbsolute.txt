@@ -1,0 +1,10 @@
+D:\GitHub\MoYan\SQL_database\Database\bin\Debug\Database.dacpac
+D:\GitHub\MoYan\SQL_database\Database\bin\Debug\Database.dll
+D:\GitHub\MoYan\SQL_database\Database\bin\Debug\Database.pdb
+D:\GitHub\MoYan\SQL_database\Database\obj\Debug\Database.sqlproj.AssemblyReference.cache
+D:\GitHub\MoYan\SQL_database\Database\obj\Debug\Model.xml
+D:\GitHub\MoYan\SQL_database\Database\obj\Debug\refactor.xml
+D:\GitHub\MoYan\SQL_database\Database\obj\Debug\postdeploy.sql
+D:\GitHub\MoYan\SQL_database\Database\obj\Debug\predeploy.sql
+D:\GitHub\MoYan\SQL_database\Database\obj\Debug\Database.dll
+D:\GitHub\MoYan\SQL_database\Database\obj\Debug\Database.pdb
