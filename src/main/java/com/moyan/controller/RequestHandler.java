@@ -39,6 +39,8 @@ public class RequestHandler {
                     return handleUpdateNickname(params);
                 case "updateAvatar":
                     return handleUpdateAvatar(params);
+                case "updatePassword":  // 新增：修改密码
+                    return handleUpdatePassword(params);
                     
                 // 帖子相关
                 case "createPost":
@@ -105,17 +107,29 @@ public class RequestHandler {
     
     // ==================== 用户相关 ====================
     
+    // 修改：使用password代替code
     private String handleLogin(Map<String, Object> params) {
         String phone = (String) params.get("phone");
-        String code = (String) params.get("code");
-        Response<?> resp = userService.login(phone, code);
+        String password = (String) params.get("password");  // 改为password
+        Response<?> resp = userService.login(phone, password);
         return gson.toJson(resp);
     }
     
+    // 修改：添加password参数
     private String handleRegister(Map<String, Object> params) {
         String phone = (String) params.get("phone");
+        String password = (String) params.get("password");  // 新增
         String nickname = (String) params.get("nickname");
-        Response<?> resp = userService.register(phone, nickname);
+        Response<?> resp = userService.register(phone, password, nickname);
+        return gson.toJson(resp);
+    }
+    
+    // 新增：修改密码
+    private String handleUpdatePassword(Map<String, Object> params) {
+        Integer userId = ((Double) params.get("userId")).intValue();
+        String oldPassword = (String) params.get("oldPassword");
+        String newPassword = (String) params.get("newPassword");
+        Response<?> resp = userService.updatePassword(userId, oldPassword, newPassword);
         return gson.toJson(resp);
     }
     
