@@ -22,7 +22,7 @@ public class RequestHandler {
     public String handle(String requestJson) {
         try {
             Map<String, Object> request = gson.fromJson(requestJson, Map.class);
-            String action = (String) request.get("type");
+            String action = (String) request.get("action");
             Map<String, Object> params = (Map<String, Object>) request.get("params");
             
             System.out.println("处理请求: " + action);
