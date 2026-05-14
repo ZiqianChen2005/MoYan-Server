@@ -189,19 +189,16 @@ public class RequestHandler {
         return gson.toJson(resp);
     }
     
-    private String handleApprovePost(Map<String, Object> params) {
-        Integer postId = ((Double) params.get("postId")).intValue();
-        Integer adminId = ((Double) params.get("adminId")).intValue();
-        Response<?> resp = postService.approvePost(postId, adminId);
-        return gson.toJson(resp);
-    }
-    
     private String handleRejectPost(Map<String, Object> params) {
         Integer postId = ((Double) params.get("postId")).intValue();
         Integer adminId = ((Double) params.get("adminId")).intValue();
         String reason = (String) params.get("reason");
         Response<?> resp = postService.rejectPost(postId, adminId, reason);
         return gson.toJson(resp);
+    }
+    
+    private String handleApprovePost(Map<String, Object> params) {
+    	    return null;
     }
     
     // ==================== 回复相关 ====================
