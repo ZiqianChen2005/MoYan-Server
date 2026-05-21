@@ -97,18 +97,32 @@ public class PostDaoImpl implements PostDao {
     public List<Post> findPendingList(int page, int size) {
         List<Post> list = new ArrayList<>();
         int offset = (page - 1) * size;
+        
+        System.out.println("=== findPendingList ===");
+        System.out.println("page: " + page + ", size: " + size + ", offset: " + offset);
+        
         String sql = "SELECT p.*, u.nickname as author_nickname " +
                      "FROM posts p LEFT JOIN users u ON p.user_id = u.user_id " +
                      "WHERE p.status = 0 ORDER BY p.post_time ASC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+        
+        System.out.println("SQL: " + sql);
+        
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, offset);
             ps.setInt(2, size);
+            
+            System.out.println("offset=" + offset + ", size=" + size);
+            
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 list.add(extractPost(rs));
             }
+            
+            System.out.println("查询到 " + list.size() + " 条记录");
+            
         } catch (SQLException e) {
+            System.out.println("SQL异常: " + e.getMessage());
             e.printStackTrace();
         }
         return list;
