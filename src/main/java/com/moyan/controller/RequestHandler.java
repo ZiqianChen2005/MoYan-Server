@@ -51,6 +51,8 @@ public class RequestHandler {
                     return handleGetPostDetail(params);
                 case "searchPosts":
                     return handleSearchPosts(params);
+                case "getPostsByUserId":
+                    return handleGetPostsByUserId(params);
                 case "approvePost":
                     return handleApprovePost(params);
                 case "rejectPost":
@@ -186,6 +188,14 @@ public class RequestHandler {
         String sortBy = (String) params.getOrDefault("sortBy", "time");
         Integer page = params.get("page") != null ? ((Double) params.get("page")).intValue() : 1;
         Response<?> resp = postService.searchPosts(keyword, tag, sortBy, page);
+        return gson.toJson(resp);
+    }
+    
+    private String handleGetPostsByUserId(Map<String, Object> params) {
+        Integer userId = ((Double) params.get("userId")).intValue();
+        Integer page = params.get("page") != null ? ((Double) params.get("page")).intValue() : 1;
+        Integer size = params.get("size") != null ? ((Double) params.get("size")).intValue() : 20;
+        Response<?> resp = postService.getPostsByUserId(userId, page, size);
         return gson.toJson(resp);
     }
     

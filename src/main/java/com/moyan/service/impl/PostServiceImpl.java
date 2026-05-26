@@ -224,4 +224,43 @@ public class PostServiceImpl implements PostService {
         }
         return Response.fail("审核失败");
     }
+    
+    @Override
+    public Response<List<PostListDTO>> getPostsByUserId(Integer userId, Integer page, Integer size) {
+        if (userId == null || userId <= 0) {
+            return Response.fail("无效的用户ID");
+        }
+        if (page == null || page < 1) page = 1;
+        if (size == null || size < 1) size = 20;
+        
+        List<Post> posts = postDao.findByUserId(userId, page, size);
+        List<PostListDTO> result = new ArrayList<>();
+        
+        for (Post post : posts) {
+            PostListDTO dto = new PostListDTO();
+            dto.setPostId(post.getPostId());
+            dto.setTitle(post.getTitle());
+            dto.setContentPreview(StringUtil.truncate(post.getContent(), 100));
+            dto.setTags(post.getTags());
+            dto.setPostTime(post.getPostTime());
+            dto.setViewCount(post.getViewCount());
+            dto.setIsNewbie(post.getIsNewbie());
+            dto.setTotalScore(post.getTotalScore());
+            
+            int replyCount = replyDao.countByPostId(post.getPostId());
+            dto.setReplyCount(replyCount);
+            
+            if (post.getIsAnonymous()) {
+                dto.setAuthorName("匿名用户");
+                dto.setIsAnonymous(true);
+            } else {
+                dto.setAuthorName(post.getAuthorNickname());
+                dto.setIsAnonymous(false);
+            }
+            
+            result.add(dto);
+        }
+        
+        return Response.success(result);
+    }
 }

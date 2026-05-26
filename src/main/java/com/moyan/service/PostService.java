@@ -13,4 +13,5 @@ public interface PostService {
     Response<List<PostListDTO>> searchPosts(String keyword, String tag, String sortBy, Integer page);
     Response<Void> approvePost(Integer postId, Integer adminId);
     Response<Void> rejectPost(Integer postId, Integer adminId, String reason);
+    Response<List<PostListDTO>> getPostsByUserId(Integer userId, Integer page, Integer size);
 }
