@@ -5,7 +5,9 @@ import com.moyan.dao.impl.UserDaoImpl;
 import com.moyan.dto.Response;
 import com.moyan.entity.User;
 import com.moyan.service.UserService;
+import org.springframework.stereotype.Service;
 
+@Service
 public class UserServiceImpl implements UserService {
     
     private UserDao userDao = new UserDaoImpl();

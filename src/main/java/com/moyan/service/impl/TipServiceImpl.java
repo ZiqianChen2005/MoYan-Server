@@ -5,8 +5,11 @@ import com.moyan.dao.impl.*;
 import com.moyan.dto.Response;
 import com.moyan.entity.*;
 import com.moyan.service.TipService;
+import org.springframework.stereotype.Service;
+
 import java.math.BigDecimal;
 
+@Service
 public class TipServiceImpl implements TipService {
     
     private TipDao tipDao = new TipDaoImpl();

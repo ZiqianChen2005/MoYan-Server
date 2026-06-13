@@ -6,9 +6,12 @@ import com.moyan.dto.Response;
 import com.moyan.entity.*;
 import com.moyan.service.DailyTaskService;
 import com.moyan.util.StringUtil;
+import org.springframework.stereotype.Service;
+
 import java.util.Date;
 import java.util.List;
 
+@Service
 public class DailyTaskServiceImpl implements DailyTaskService {
     
     private DailyTaskDao taskDao = new DailyTaskDaoImpl();

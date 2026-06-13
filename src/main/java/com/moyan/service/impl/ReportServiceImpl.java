@@ -5,7 +5,9 @@ import com.moyan.dao.impl.*;
 import com.moyan.dto.Response;
 import com.moyan.entity.*;
 import com.moyan.service.ReportService;
+import org.springframework.stereotype.Service;
 
+@Service
 public class ReportServiceImpl implements ReportService {
     
     private ReportDao reportDao = new ReportDaoImpl();
