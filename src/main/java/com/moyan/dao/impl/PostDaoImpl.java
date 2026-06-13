@@ -3,17 +3,21 @@ package com.moyan.dao.impl;
 import com.moyan.dao.PostDao;
 import com.moyan.entity.Post;
 import com.moyan.util.DBUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class PostDaoImpl implements PostDao {
 
+    private static final Logger log = LoggerFactory.getLogger(PostDaoImpl.class);
+
     @Override
     public Post findByPostId(Integer postId) {
         String sql = "SELECT p.*, u.nickname as author_nickname " +
-                     "FROM posts p LEFT JOIN users u ON p.user_id = u.user_id " +
-                     "WHERE p.post_id = ?";
+                "FROM posts p LEFT JOIN users u ON p.user_id = u.user_id " +
+                "WHERE p.post_id = ?";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, postId);
@@ -22,7 +26,7 @@ public class PostDaoImpl implements PostDao {
                 return extractPost(rs);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("根据帖子ID查询帖子失败, postId={}", postId, e);
         }
         return null;
     }
@@ -30,7 +34,7 @@ public class PostDaoImpl implements PostDao {
     @Override
     public int insert(Post post) {
         String sql = "INSERT INTO posts (user_id, is_anonymous, title, content, tags, is_newbie, status) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, 0)";
+                "VALUES (?, ?, ?, ?, ?, ?, 0)";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, post.getUserId());
@@ -47,7 +51,7 @@ public class PostDaoImpl implements PostDao {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("插入帖子失败, post={}", post, e);
         }
         return -1;
     }
@@ -61,7 +65,7 @@ public class PostDaoImpl implements PostDao {
             ps.setInt(2, postId);
             return ps.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("更新帖子状态失败, postId={}, status={}", postId, status, e);
         }
         return 0;
     }
@@ -74,7 +78,7 @@ public class PostDaoImpl implements PostDao {
             ps.setInt(1, postId);
             return ps.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("更新帖子浏览量失败, postId={}", postId, e);
         }
         return 0;
     }
@@ -88,7 +92,7 @@ public class PostDaoImpl implements PostDao {
             ps.setInt(2, postId);
             return ps.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("更新帖子评分失败, postId={}, totalScore={}", postId, totalScore, e);
         }
         return 0;
     }
@@ -97,33 +101,24 @@ public class PostDaoImpl implements PostDao {
     public List<Post> findPendingList(int page, int size) {
         List<Post> list = new ArrayList<>();
         int offset = (page - 1) * size;
-        
-        System.out.println("=== findPendingList ===");
-        System.out.println("page: " + page + ", size: " + size + ", offset: " + offset);
-        
+
+        log.debug("查询待审核帖子列表, page={}, size={}, offset={}", page, size, offset);
+
         String sql = "SELECT p.*, u.nickname as author_nickname " +
-                     "FROM posts p LEFT JOIN users u ON p.user_id = u.user_id " +
-                     "WHERE p.status = 0 ORDER BY p.post_time ASC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
-        
-        System.out.println("SQL: " + sql);
-        
+                "FROM posts p LEFT JOIN users u ON p.user_id = u.user_id " +
+                "WHERE p.status = 0 ORDER BY p.post_time ASC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, offset);
             ps.setInt(2, size);
-            
-            System.out.println("offset=" + offset + ", size=" + size);
-            
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 list.add(extractPost(rs));
             }
-            
-            System.out.println("查询到 " + list.size() + " 条记录");
-            
+            log.debug("查询到 {} 条待审核帖子", list.size());
         } catch (SQLException e) {
-            System.out.println("SQL异常: " + e.getMessage());
-            e.printStackTrace();
+            log.error("查询待审核帖子列表失败, page={}, size={}", page, size, e);
         }
         return list;
     }
@@ -133,12 +128,12 @@ public class PostDaoImpl implements PostDao {
         List<Post> list = new ArrayList<>();
         int offset = (page - 1) * size;
         StringBuilder sql = new StringBuilder(
-            "SELECT p.*, u.nickname as author_nickname, " +
-            "(SELECT AVG(article_score * 0.55 + tag_accuracy * 0.3) FROM ratings WHERE post_id = p.post_id) as total_score " +
-            "FROM posts p LEFT JOIN users u ON p.user_id = u.user_id " +
-            "WHERE p.status = 1 "
+                "SELECT p.*, u.nickname as author_nickname, " +
+                        "(SELECT AVG(article_score * 0.55 + tag_accuracy * 0.3) FROM ratings WHERE post_id = p.post_id) as total_score " +
+                        "FROM posts p LEFT JOIN users u ON p.user_id = u.user_id " +
+                        "WHERE p.status = 1 "
         );
-        
+
         if (tag != null && !tag.isEmpty()) {
             sql.append("AND p.tags LIKE ? ");
         }
@@ -146,7 +141,7 @@ public class PostDaoImpl implements PostDao {
             sql.append("AND (p.title LIKE ? OR p.content LIKE ?) ");
         }
         sql.append("ORDER BY p.post_time DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
-        
+
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql.toString())) {
             int paramIndex = 1;
@@ -165,7 +160,7 @@ public class PostDaoImpl implements PostDao {
                 list.add(extractPost(rs));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("查询已通过审核帖子列表失败, page={}, size={}, tag={}, keyword={}", page, size, tag, keyword, e);
         }
         return list;
     }
@@ -174,20 +169,19 @@ public class PostDaoImpl implements PostDao {
     public List<Post> findRecommendedList(int page, int size, int currentUserId) {
         List<Post> list = new ArrayList<>();
         int offset = (page - 1) * size;
-        // 综合评分 = 文章评分55% + tag精确度30% + 打赏量15%
         String sql = "SELECT p.*, u.nickname as author_nickname, " +
-                     "COALESCE((" +
-                     "   SELECT AVG(r.article_score * 0.55 + r.tag_accuracy * 0.3) " +
-                     "   FROM ratings r WHERE r.post_id = p.post_id" +
-                     "), 0) + " +
-                     "COALESCE((" +
-                     "   SELECT SUM(t.amount * 0.15 / 100) " +
-                     "   FROM tips t WHERE t.post_id = p.post_id" +
-                     "), 0) as total_score " +
-                     "FROM posts p LEFT JOIN users u ON p.user_id = u.user_id " +
-                     "WHERE p.status = 1 " +
-                     "ORDER BY total_score DESC, p.post_time DESC " +
-                     "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+                "COALESCE((" +
+                "   SELECT AVG(r.article_score * 0.55 + r.tag_accuracy * 0.3) " +
+                "   FROM ratings r WHERE r.post_id = p.post_id" +
+                "), 0) + " +
+                "COALESCE((" +
+                "   SELECT SUM(t.amount * 0.15 / 100) " +
+                "   FROM tips t WHERE t.post_id = p.post_id" +
+                "), 0) as total_score " +
+                "FROM posts p LEFT JOIN users u ON p.user_id = u.user_id " +
+                "WHERE p.status = 1 " +
+                "ORDER BY total_score DESC, p.post_time DESC " +
+                "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, offset);
@@ -197,7 +191,7 @@ public class PostDaoImpl implements PostDao {
                 list.add(extractPost(rs));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("查询推荐帖子列表失败, page={}, size={}, currentUserId={}", page, size, currentUserId, e);
         }
         return list;
     }
@@ -207,9 +201,9 @@ public class PostDaoImpl implements PostDao {
         List<Post> list = new ArrayList<>();
         int offset = (page - 1) * size;
         String sql = "SELECT p.*, u.nickname as author_nickname " +
-                     "FROM posts p LEFT JOIN users u ON p.user_id = u.user_id " +
-                     "WHERE p.user_id = ? ORDER BY p.post_time DESC " +
-                     "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+                "FROM posts p LEFT JOIN users u ON p.user_id = u.user_id " +
+                "WHERE p.user_id = ? ORDER BY p.post_time DESC " +
+                "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, userId);
@@ -220,7 +214,7 @@ public class PostDaoImpl implements PostDao {
                 list.add(extractPost(rs));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("根据用户ID查询帖子列表失败, userId={}, page={}, size={}", userId, page, size, e);
         }
         return list;
     }
@@ -236,7 +230,7 @@ public class PostDaoImpl implements PostDao {
                 return rs.getInt(1);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("统计用户帖子数量失败, userId={}", userId, e);
         }
         return 0;
     }
@@ -251,7 +245,7 @@ public class PostDaoImpl implements PostDao {
                 return rs.getInt(1);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("统计待审核帖子数量失败", e);
         }
         return 0;
     }
@@ -267,7 +261,7 @@ public class PostDaoImpl implements PostDao {
                 return rs.getInt(1);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("根据状态统计帖子数量失败, status={}", status, e);
         }
         return 0;
     }
@@ -286,10 +280,14 @@ public class PostDaoImpl implements PostDao {
         post.setViewCount(rs.getInt("view_count"));
         try {
             post.setAuthorNickname(rs.getString("author_nickname"));
-        } catch (SQLException e) {}
+        } catch (SQLException e) {
+            // 字段不存在，忽略
+        }
         try {
             post.setTotalScore(rs.getDouble("total_score"));
-        } catch (SQLException e) {}
+        } catch (SQLException e) {
+            // 字段不存在，忽略
+        }
         return post;
     }
 }

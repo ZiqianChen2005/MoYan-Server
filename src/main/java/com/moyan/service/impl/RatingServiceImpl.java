@@ -5,7 +5,9 @@ import com.moyan.dao.impl.*;
 import com.moyan.service.RatingService;
 import com.moyan.dto.Response;
 import com.moyan.entity.*;
+import org.springframework.stereotype.Service;
 
+@Service
 public class RatingServiceImpl implements RatingService {
     
     private RatingDao ratingDao = new RatingDaoImpl();

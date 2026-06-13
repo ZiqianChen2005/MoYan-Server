@@ -7,9 +7,12 @@ import com.moyan.dto.ReplyDTO;
 import com.moyan.entity.*;
 import com.moyan.service.ReplyService;
 import com.moyan.util.StringUtil;
+import org.springframework.stereotype.Service;
+
 import java.util.ArrayList;
 import java.util.List;
 
+@Service
 public class ReplyServiceImpl implements ReplyService {
     
     private ReplyDao replyDao = new ReplyDaoImpl();

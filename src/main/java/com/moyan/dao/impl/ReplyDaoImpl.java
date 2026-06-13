@@ -3,18 +3,22 @@ package com.moyan.dao.impl;
 import com.moyan.dao.ReplyDao;
 import com.moyan.entity.Reply;
 import com.moyan.util.DBUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ReplyDaoImpl implements ReplyDao {
 
+    private static final Logger log = LoggerFactory.getLogger(ReplyDaoImpl.class);
+
     @Override
     public Reply findByReplyId(Integer replyId) {
         String sql = "SELECT r.*, u.nickname as author_nickname, p.title as post_title " +
-                     "FROM replies r LEFT JOIN users u ON r.user_id = u.user_id " +
-                     "LEFT JOIN posts p ON r.post_id = p.post_id " +
-                     "WHERE r.reply_id = ?";
+                "FROM replies r LEFT JOIN users u ON r.user_id = u.user_id " +
+                "LEFT JOIN posts p ON r.post_id = p.post_id " +
+                "WHERE r.reply_id = ?";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, replyId);
@@ -23,7 +27,7 @@ public class ReplyDaoImpl implements ReplyDao {
                 return extractReply(rs);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("根据回复ID查询回复失败, replyId={}", replyId, e);
         }
         return null;
     }
@@ -31,7 +35,7 @@ public class ReplyDaoImpl implements ReplyDao {
     @Override
     public int insert(Reply reply) {
         String sql = "INSERT INTO replies (post_id, user_id, is_anonymous, anonymous_num, content, status) " +
-                     "VALUES (?, ?, ?, ?, ?, 0)";
+                "VALUES (?, ?, ?, ?, ?, 0)";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, reply.getPostId());
@@ -51,7 +55,7 @@ public class ReplyDaoImpl implements ReplyDao {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("插入回复失败, reply={}", reply, e);
         }
         return -1;
     }
@@ -65,7 +69,7 @@ public class ReplyDaoImpl implements ReplyDao {
             ps.setInt(2, replyId);
             return ps.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("更新回复状态失败, replyId={}, status={}", replyId, status, e);
         }
         return 0;
     }
@@ -75,9 +79,9 @@ public class ReplyDaoImpl implements ReplyDao {
         List<Reply> list = new ArrayList<>();
         int offset = (page - 1) * size;
         String sql = "SELECT r.*, u.nickname as author_nickname " +
-                     "FROM replies r LEFT JOIN users u ON r.user_id = u.user_id " +
-                     "WHERE r.post_id = ? AND r.status = 1 " +
-                     "ORDER BY r.reply_time ASC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+                "FROM replies r LEFT JOIN users u ON r.user_id = u.user_id " +
+                "WHERE r.post_id = ? AND r.status = 1 " +
+                "ORDER BY r.reply_time ASC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, postId);
@@ -88,7 +92,7 @@ public class ReplyDaoImpl implements ReplyDao {
                 list.add(extractReply(rs));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("根据帖子ID查询回复列表失败, postId={}, page={}, size={}", postId, page, size, e);
         }
         return list;
     }
@@ -98,10 +102,10 @@ public class ReplyDaoImpl implements ReplyDao {
         List<Reply> list = new ArrayList<>();
         int offset = (page - 1) * size;
         String sql = "SELECT r.*, u.nickname as author_nickname, p.title as post_title " +
-                     "FROM replies r LEFT JOIN users u ON r.user_id = u.user_id " +
-                     "LEFT JOIN posts p ON r.post_id = p.post_id " +
-                     "WHERE r.status = 0 ORDER BY r.reply_time ASC " +
-                     "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+                "FROM replies r LEFT JOIN users u ON r.user_id = u.user_id " +
+                "LEFT JOIN posts p ON r.post_id = p.post_id " +
+                "WHERE r.status = 0 ORDER BY r.reply_time ASC " +
+                "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, offset);
@@ -111,7 +115,7 @@ public class ReplyDaoImpl implements ReplyDao {
                 list.add(extractReply(rs));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("查询待审核回复列表失败, page={}, size={}", page, size, e);
         }
         return list;
     }
@@ -127,7 +131,7 @@ public class ReplyDaoImpl implements ReplyDao {
                 return rs.getInt(1);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("统计帖子回复数量失败, postId={}", postId, e);
         }
         return 0;
     }
@@ -142,7 +146,7 @@ public class ReplyDaoImpl implements ReplyDao {
                 return rs.getInt(1);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("统计待审核回复数量失败", e);
         }
         return 0;
     }
@@ -159,7 +163,7 @@ public class ReplyDaoImpl implements ReplyDao {
                 return rs.getInt(1);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("统计用户匿名回复数量失败, postId={}, userId={}", postId, userId, e);
         }
         return 0;
     }

@@ -14,12 +14,15 @@ public class User {
     private Boolean isBanned;
     private Date registerTime;
     private Date lastLoginTime;
+    private String token;
+    private Date tokenExpireTime;
 
     public User() {}
 
-    public User(Integer userId, String phone, String nickname, String avatarUrl, 
-                String passwordHash, Boolean isVip, Date vipExpireDate, 
-                Integer warningCount, Boolean isBanned, Date registerTime, Date lastLoginTime) {
+    public User(Integer userId, String phone, String nickname, String avatarUrl,
+                String passwordHash, Boolean isVip, Date vipExpireDate,
+                Integer warningCount, Boolean isBanned, Date registerTime, Date lastLoginTime,
+                String token, Date tokenExpireTime) {
         this.userId = userId;
         this.phone = phone;
         this.nickname = nickname;
@@ -31,6 +34,8 @@ public class User {
         this.isBanned = isBanned;
         this.registerTime = registerTime;
         this.lastLoginTime = lastLoginTime;
+        this.token = token;
+        this.tokenExpireTime = tokenExpireTime;
     }
 
     // Getters and Setters
@@ -56,6 +61,10 @@ public class User {
     public void setRegisterTime(Date registerTime) { this.registerTime = registerTime; }
     public Date getLastLoginTime() { return lastLoginTime; }
     public void setLastLoginTime(Date lastLoginTime) { this.lastLoginTime = lastLoginTime; }
+    public String getToken() { return token; }
+    public void setToken(String token) { this.token = token; }
+    public Date getTokenExpireTime() { return tokenExpireTime; }
+    public void setTokenExpireTime(Date tokenExpireTime) { this.tokenExpireTime = tokenExpireTime; }
 
     @Override
     public String toString() {

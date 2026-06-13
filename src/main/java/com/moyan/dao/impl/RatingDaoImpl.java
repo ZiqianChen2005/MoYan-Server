@@ -3,16 +3,20 @@ package com.moyan.dao.impl;
 import com.moyan.dao.RatingDao;
 import com.moyan.entity.Rating;
 import com.moyan.util.DBUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class RatingDaoImpl implements RatingDao {
 
+    private static final Logger log = LoggerFactory.getLogger(RatingDaoImpl.class);
+
     @Override
     public Rating findByPostAndUser(Integer postId, Integer userId) {
         String sql = "SELECT rating_id, post_id, user_id, tag_accuracy, article_score, comment, rating_time " +
-                     "FROM ratings WHERE post_id = ? AND user_id = ?";
+                "FROM ratings WHERE post_id = ? AND user_id = ?";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, postId);
@@ -22,7 +26,7 @@ public class RatingDaoImpl implements RatingDao {
                 return extractRating(rs);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("根据帖子ID和用户ID查询评分失败, postId={}, userId={}", postId, userId, e);
         }
         return null;
     }
@@ -30,7 +34,7 @@ public class RatingDaoImpl implements RatingDao {
     @Override
     public int insert(Rating rating) {
         String sql = "INSERT INTO ratings (post_id, user_id, tag_accuracy, article_score, comment) " +
-                     "VALUES (?, ?, ?, ?, ?)";
+                "VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, rating.getPostId());
@@ -40,7 +44,7 @@ public class RatingDaoImpl implements RatingDao {
             ps.setString(5, rating.getComment());
             return ps.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("插入评分失败, rating={}", rating, e);
         }
         return 0;
     }
@@ -49,7 +53,7 @@ public class RatingDaoImpl implements RatingDao {
     public List<Rating> findByPostId(Integer postId) {
         List<Rating> list = new ArrayList<>();
         String sql = "SELECT rating_id, post_id, user_id, tag_accuracy, article_score, comment, rating_time " +
-                     "FROM ratings WHERE post_id = ?";
+                "FROM ratings WHERE post_id = ?";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, postId);
@@ -58,7 +62,7 @@ public class RatingDaoImpl implements RatingDao {
                 list.add(extractRating(rs));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("根据帖子ID查询评分列表失败, postId={}", postId, e);
         }
         return list;
     }
@@ -74,7 +78,7 @@ public class RatingDaoImpl implements RatingDao {
                 return rs.getDouble(1);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("获取帖子平均标签准确度失败, postId={}", postId, e);
         }
         return 0;
     }
@@ -90,7 +94,7 @@ public class RatingDaoImpl implements RatingDao {
                 return rs.getDouble(1);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("获取帖子平均文章评分失败, postId={}", postId, e);
         }
         return 0;
     }
@@ -106,7 +110,7 @@ public class RatingDaoImpl implements RatingDao {
                 return rs.getInt(1);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("统计帖子评分数量失败, postId={}", postId, e);
         }
         return 0;
     }

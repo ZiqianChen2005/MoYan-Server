@@ -3,11 +3,15 @@ package com.moyan.dao.impl;
 import com.moyan.dao.TaskAnswerDao;
 import com.moyan.entity.TaskAnswer;
 import com.moyan.util.DBUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class TaskAnswerDaoImpl implements TaskAnswerDao {
+
+    private static final Logger log = LoggerFactory.getLogger(TaskAnswerDaoImpl.class);
 
     @Override
     public int insert(TaskAnswer answer) {
@@ -25,7 +29,7 @@ public class TaskAnswerDaoImpl implements TaskAnswerDao {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("插入任务回答失败, answer={}", answer, e);
         }
         return -1;
     }
@@ -39,7 +43,7 @@ public class TaskAnswerDaoImpl implements TaskAnswerDao {
             ps.setInt(2, answerId);
             return ps.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("更新任务回答评分失败, answerId={}, score={}", answerId, score, e);
         }
         return 0;
     }
@@ -48,8 +52,8 @@ public class TaskAnswerDaoImpl implements TaskAnswerDao {
     public List<TaskAnswer> findByTaskId(Integer taskId, int limit) {
         List<TaskAnswer> list = new ArrayList<>();
         String sql = "SELECT a.*, u.nickname as user_nickname " +
-                     "FROM task_answers a LEFT JOIN users u ON a.user_id = u.user_id " +
-                     "WHERE a.task_id = ? ORDER BY a.score DESC, a.submit_time ASC";
+                "FROM task_answers a LEFT JOIN users u ON a.user_id = u.user_id " +
+                "WHERE a.task_id = ? ORDER BY a.score DESC, a.submit_time ASC";
         if (limit > 0) {
             sql += " OFFSET 0 ROWS FETCH NEXT ? ROWS ONLY";
         }
@@ -64,7 +68,7 @@ public class TaskAnswerDaoImpl implements TaskAnswerDao {
                 list.add(extractAnswer(rs));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("根据任务ID查询回答列表失败, taskId={}, limit={}", taskId, limit, e);
         }
         return list;
     }
@@ -74,9 +78,9 @@ public class TaskAnswerDaoImpl implements TaskAnswerDao {
         List<TaskAnswer> list = new ArrayList<>();
         int offset = (page - 1) * size;
         String sql = "SELECT a.*, u.nickname as user_nickname " +
-                     "FROM task_answers a LEFT JOIN users u ON a.user_id = u.user_id " +
-                     "WHERE a.user_id = ? ORDER BY a.submit_time DESC " +
-                     "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+                "FROM task_answers a LEFT JOIN users u ON a.user_id = u.user_id " +
+                "WHERE a.user_id = ? ORDER BY a.submit_time DESC " +
+                "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, userId);
@@ -87,7 +91,7 @@ public class TaskAnswerDaoImpl implements TaskAnswerDao {
                 list.add(extractAnswer(rs));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("根据用户ID查询任务回答列表失败, userId={}, page={}, size={}", userId, page, size, e);
         }
         return list;
     }
@@ -104,7 +108,7 @@ public class TaskAnswerDaoImpl implements TaskAnswerDao {
                 return rs.getInt(1) > 0;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("检查用户是否已提交任务回答失败, taskId={}, userId={}", taskId, userId, e);
         }
         return false;
     }

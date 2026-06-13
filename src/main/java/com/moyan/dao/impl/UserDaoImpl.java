@@ -3,13 +3,17 @@ package com.moyan.dao.impl;
 import com.moyan.dao.UserDao;
 import com.moyan.entity.User;
 import com.moyan.util.DBUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class UserDaoImpl implements UserDao {
 
-    // 新增：MD5加密工具方法
+    private static final Logger log = LoggerFactory.getLogger(UserDaoImpl.class);
+
+    // MD5方法保持不变...
     private String md5(String str) {
         if (str == null) return null;
         try {
@@ -21,7 +25,7 @@ public class UserDaoImpl implements UserDao {
             }
             return sb.toString();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("MD5加密失败", e);
             return str;
         }
     }
@@ -29,8 +33,8 @@ public class UserDaoImpl implements UserDao {
     @Override
     public User findByUserId(Integer userId) {
         String sql = "SELECT user_id, phone, nickname, avatar_url, password_hash, " +
-                     "is_vip, vip_expire_date, warning_count, is_banned, " +
-                     "register_time, last_login_time FROM users WHERE user_id = ?";
+                "is_vip, vip_expire_date, warning_count, is_banned, " +
+                "register_time, last_login_time, token, token_expire_time FROM users WHERE user_id = ?";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, userId);
@@ -39,7 +43,7 @@ public class UserDaoImpl implements UserDao {
                 return extractUser(rs);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("根据用户ID查询用户失败, userId={}", userId, e);
         }
         return null;
     }
@@ -47,8 +51,8 @@ public class UserDaoImpl implements UserDao {
     @Override
     public User findByPhone(String phone) {
         String sql = "SELECT user_id, phone, nickname, avatar_url, password_hash, " +
-                     "is_vip, vip_expire_date, warning_count, is_banned, " +
-                     "register_time, last_login_time FROM users WHERE phone = ?";
+                "is_vip, vip_expire_date, warning_count, is_banned, " +
+                "register_time, last_login_time, token, token_expire_time FROM users WHERE phone = ?";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, phone);
@@ -57,27 +61,26 @@ public class UserDaoImpl implements UserDao {
                 return extractUser(rs);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("根据手机号查询用户失败, phone={}", phone, e);
         }
         return null;
     }
 
-    // 新增：根据手机号和密码查找用户（登录验证）
     @Override
     public User findByPhoneAndPassword(String phone, String passwordHash) {
         String sql = "SELECT user_id, phone, nickname, avatar_url, password_hash, " +
-                     "is_vip, vip_expire_date, warning_count, is_banned, " +
-                     "register_time, last_login_time FROM users WHERE phone = ? AND password_hash = ?";
+                "is_vip, vip_expire_date, warning_count, is_banned, " +
+                "register_time, last_login_time FROM users WHERE phone = ? AND password_hash = ?";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, phone);
-            ps.setString(2, md5(passwordHash));  // 对传入的密码进行MD5加密后比较
+            ps.setString(2, md5(passwordHash));
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 return extractUser(rs);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("根据手机号和密码查询用户失败, phone={}", phone, e);
         }
         return null;
     }
@@ -85,8 +88,8 @@ public class UserDaoImpl implements UserDao {
     @Override
     public User findByNickname(String nickname) {
         String sql = "SELECT user_id, phone, nickname, avatar_url, password_hash, " +
-                     "is_vip, vip_expire_date, warning_count, is_banned, " +
-                     "register_time, last_login_time FROM users WHERE nickname = ?";
+                "is_vip, vip_expire_date, warning_count, is_banned, " +
+                "register_time, last_login_time FROM users WHERE nickname = ?";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, nickname);
@@ -95,7 +98,26 @@ public class UserDaoImpl implements UserDao {
                 return extractUser(rs);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("根据昵称查询用户失败, nickname={}", nickname, e);
+        }
+        return null;
+    }
+
+    @Override
+    public User findByToken(String token) {
+        String sql = "SELECT user_id, phone, nickname, avatar_url, password_hash, " +
+                "is_vip, vip_expire_date, warning_count, is_banned, " +
+                "register_time, last_login_time, token, token_expire_time " +
+                "FROM users WHERE token = ? AND token_expire_time > GETDATE()";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, token);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return extractUser(rs);
+            }
+        } catch (SQLException e) {
+            log.error("根据Token查询用户失败", e);
         }
         return null;
     }
@@ -103,13 +125,13 @@ public class UserDaoImpl implements UserDao {
     @Override
     public int insert(User user) {
         String sql = "INSERT INTO users (phone, nickname, avatar_url, password_hash, is_vip, register_time) " +
-                     "VALUES (?, ?, ?, ?, 0, GETDATE())";
+                "VALUES (?, ?, ?, ?, 0, GETDATE())";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, user.getPhone());
             ps.setString(2, user.getNickname());
             ps.setString(3, user.getAvatarUrl());
-            ps.setString(4, md5(user.getPasswordHash()));  // 密码加密存储
+            ps.setString(4, md5(user.getPasswordHash()));
             int affected = ps.executeUpdate();
             if (affected > 0) {
                 ResultSet rs = ps.getGeneratedKeys();
@@ -118,7 +140,7 @@ public class UserDaoImpl implements UserDao {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("插入用户失败, user={}", user, e);
         }
         return -1;
     }
@@ -126,7 +148,7 @@ public class UserDaoImpl implements UserDao {
     @Override
     public int update(User user) {
         String sql = "UPDATE users SET nickname = ?, avatar_url = ?, is_vip = ?, " +
-                     "vip_expire_date = ?, warning_count = ?, is_banned = ? WHERE user_id = ?";
+                "vip_expire_date = ?, warning_count = ?, is_banned = ? WHERE user_id = ?";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, user.getNickname());
@@ -138,12 +160,11 @@ public class UserDaoImpl implements UserDao {
             ps.setInt(7, user.getUserId());
             return ps.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("更新用户失败, userId={}", user.getUserId(), e);
         }
         return 0;
     }
 
-    // 新增：修改密码
     @Override
     public int updatePassword(Integer userId, String newPasswordHash) {
         String sql = "UPDATE users SET password_hash = ? WHERE user_id = ?";
@@ -153,12 +174,11 @@ public class UserDaoImpl implements UserDao {
             ps.setInt(2, userId);
             return ps.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("更新用户密码失败, userId={}", userId, e);
         }
         return 0;
     }
 
-    // 新增：检查手机号是否已存在
     @Override
     public boolean existsByPhone(String phone) {
         String sql = "SELECT 1 FROM users WHERE phone = ?";
@@ -168,7 +188,7 @@ public class UserDaoImpl implements UserDao {
             ResultSet rs = ps.executeQuery();
             return rs.next();
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("检查手机号是否存在失败, phone={}", phone, e);
         }
         return false;
     }
@@ -181,7 +201,7 @@ public class UserDaoImpl implements UserDao {
             ps.setInt(1, userId);
             return ps.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("更新用户最后登录时间失败, userId={}", userId, e);
         }
         return 0;
     }
@@ -195,7 +215,7 @@ public class UserDaoImpl implements UserDao {
             ps.setInt(2, userId);
             return ps.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("更新用户昵称失败, userId={}, nickname={}", userId, nickname, e);
         }
         return 0;
     }
@@ -209,7 +229,7 @@ public class UserDaoImpl implements UserDao {
             ps.setInt(2, userId);
             return ps.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("更新用户头像失败, userId={}, avatarUrl={}", userId, avatarUrl, e);
         }
         return 0;
     }
@@ -221,7 +241,6 @@ public class UserDaoImpl implements UserDao {
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, userId);
             int affected = ps.executeUpdate();
-            // 检查是否需要自动封禁
             String checkSql = "UPDATE users SET is_banned = 1 WHERE user_id = ? AND warning_count >= 3 AND is_banned = 0";
             try (PreparedStatement ps2 = conn.prepareStatement(checkSql)) {
                 ps2.setInt(1, userId);
@@ -229,7 +248,7 @@ public class UserDaoImpl implements UserDao {
             }
             return affected;
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("增加用户警告次数失败, userId={}", userId, e);
         }
         return 0;
     }
@@ -242,7 +261,7 @@ public class UserDaoImpl implements UserDao {
             ps.setInt(1, userId);
             return ps.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("封禁用户失败, userId={}", userId, e);
         }
         return 0;
     }
@@ -255,7 +274,7 @@ public class UserDaoImpl implements UserDao {
             ps.setInt(1, userId);
             return ps.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("解封用户失败, userId={}", userId, e);
         }
         return 0;
     }
@@ -265,8 +284,8 @@ public class UserDaoImpl implements UserDao {
         List<User> list = new ArrayList<>();
         int offset = (page - 1) * size;
         String sql = "SELECT user_id, phone, nickname, avatar_url, is_vip, " +
-                     "vip_expire_date, warning_count, is_banned, register_time, last_login_time " +
-                     "FROM users ORDER BY user_id OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+                "vip_expire_date, warning_count, is_banned, register_time, last_login_time" +
+                "FROM users ORDER BY user_id OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, offset);
@@ -276,7 +295,7 @@ public class UserDaoImpl implements UserDao {
                 list.add(extractUser(rs));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("分页查询用户列表失败, page={}, size={}", page, size, e);
         }
         return list;
     }
@@ -291,7 +310,48 @@ public class UserDaoImpl implements UserDao {
                 return rs.getInt(1);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("统计用户总数失败", e);
+        }
+        return 0;
+    }
+
+    @Override
+    public int deleteUser(Integer userId) {
+        String sql = "DELETE FROM users WHERE user_id = ?";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            return ps.executeUpdate();
+        } catch (SQLException e) {
+            log.error("删除用户失败, userId={}", userId, e);
+        }
+        return 0;
+    }
+
+    @Override
+    public int updateToken(Integer userId, String token, java.util.Date expireTime) {
+        String sql = "UPDATE users SET token = ?, token_expire_time = ? WHERE user_id = ?";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, token);
+            ps.setTimestamp(2, new Timestamp(expireTime.getTime()));
+            ps.setInt(3, userId);
+            return ps.executeUpdate();
+        } catch (SQLException e) {
+            log.error("更新用户Token失败, userId={}", userId, e);
+        }
+        return 0;
+    }
+
+    @Override
+    public int clearToken(Integer userId) {
+        String sql = "UPDATE users SET token = NULL, token_expire_time = NULL WHERE user_id = ?";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            return ps.executeUpdate();
+        } catch (SQLException e) {
+            log.error("清除用户Token失败, userId={}", userId, e);
         }
         return 0;
     }

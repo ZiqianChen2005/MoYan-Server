@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="5fbb4c0d-7f71-4d9c-8f8b-e9d683f5edee" name="更改" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/data_source_mapping.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/moyan/config/WebSocketConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/controller/ApiController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/controller/ApiController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/dao/UserDao.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/dao/UserDao.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/AnonymousMappingDaoImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/AnonymousMappingDaoImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/DailyTaskDaoImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/DailyTaskDaoImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/PostDaoImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/PostDaoImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/RatingDaoImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/RatingDaoImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/ReplyDaoImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/ReplyDaoImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/ReportDaoImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/ReportDaoImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/TaskAnswerDaoImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/TaskAnswerDaoImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/TipDaoImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/TipDaoImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/UserDaoImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/UserDaoImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/entity/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/entity/User.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/server/SocketServer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/server/WebSocketServer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/service/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/service/UserService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/service/impl/UserServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/service/impl/UserServiceImpl.java" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 7,
+  &quot;fromUser&quot;: false
+}</component>
+  <component name="ProjectId" id="3F3wPQzz8Ov9Xf9G6x1wSp7Jrd4" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RequestMappingsPanelOrder0": "0",
+    "RequestMappingsPanelOrder1": "1",
+    "RequestMappingsPanelWidth0": "75",
+    "RequestMappingsPanelWidth1": "75",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "Spring Boot.MoYanApplication.executor": "Run",
+    "Spring Boot.SocketServer.executor": "Run",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "git-widget-placeholder": "reframe-test",
+    "ignore.virus.scanning.warn.message": "true",
+    "kotlin-language-version-configured": "true",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "模块",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.0",
+    "vue.rearranger.settings.migration": "true",
+    "应用程序.SocketServer.executor": "Run"
+  },
+  "keyToStringList": {
+    "com.intellij.ide.scratch.LRUPopupBuilder$1/SQL 方言": [
+      "TSQL",
+      "SQL92"
+    ]
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\GitHub\MoYan-Server\web\WEB-INF" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Spring Boot.MoYanApplication">
+    <configuration name="MoYanApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
+      <module name="MoYan-Server" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.moyan.MoYanApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="SocketServer" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" temporary="true" nameIsGenerated="true">
+      <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
+      <module name="moyan-server" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.moyan.server.SocketServer" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.moyan.server.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Spring Boot.SocketServer" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="默认任务">
+      <changelist id="5fbb4c0d-7f71-4d9c-8f8b-e9d683f5edee" name="更改" comment="" />
+      <created>1781317049564</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1781317049564</updated>
+      <workItem from="1781317050679" duration="867000" />
+      <workItem from="1781317929087" duration="206000" />
+      <workItem from="1781318142261" duration="4063000" />
+      <workItem from="1781322243612" duration="403000" />
+      <workItem from="1781357438416" duration="3183000" />
+      <workItem from="1781376266368" duration="3372000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>
