@@ -3,16 +3,20 @@ package com.moyan.dao.impl;
 import com.moyan.dao.ReportDao;
 import com.moyan.entity.Report;
 import com.moyan.util.DBUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ReportDaoImpl implements ReportDao {
 
+    private static final Logger log = LoggerFactory.getLogger(ReportDaoImpl.class);
+
     @Override
     public int insert(Report report) {
         String sql = "INSERT INTO reports (reporter_id, target_type, target_id, reason, status) " +
-                     "VALUES (?, ?, ?, ?, 0)";
+                "VALUES (?, ?, ?, ?, 0)";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, report.getReporterId());
@@ -21,7 +25,7 @@ public class ReportDaoImpl implements ReportDao {
             ps.setString(4, report.getReason());
             return ps.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("插入举报记录失败, report={}", report, e);
         }
         return 0;
     }
@@ -29,7 +33,7 @@ public class ReportDaoImpl implements ReportDao {
     @Override
     public int updateStatus(Integer reportId, Integer status, Integer handlerId, String handleNote) {
         String sql = "UPDATE reports SET status = ?, handler_id = ?, handle_time = GETDATE(), handle_note = ? " +
-                     "WHERE report_id = ?";
+                "WHERE report_id = ?";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, status);
@@ -42,7 +46,7 @@ public class ReportDaoImpl implements ReportDao {
             ps.setInt(4, reportId);
             return ps.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("更新举报状态失败, reportId={}, status={}", reportId, status, e);
         }
         return 0;
     }
@@ -52,9 +56,9 @@ public class ReportDaoImpl implements ReportDao {
         List<Report> list = new ArrayList<>();
         int offset = (page - 1) * size;
         String sql = "SELECT report_id, reporter_id, target_type, target_id, reason, report_time, " +
-                     "status, handler_id, handle_time, handle_note " +
-                     "FROM reports WHERE status = ? ORDER BY report_time ASC " +
-                     "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+                "status, handler_id, handle_time, handle_note " +
+                "FROM reports WHERE status = ? ORDER BY report_time ASC " +
+                "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, status);
@@ -65,7 +69,7 @@ public class ReportDaoImpl implements ReportDao {
                 list.add(extractReport(rs));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("根据状态查询举报列表失败, status={}, page={}, size={}", status, page, size, e);
         }
         return list;
     }
@@ -73,7 +77,7 @@ public class ReportDaoImpl implements ReportDao {
     @Override
     public Report findByReportId(Integer reportId) {
         String sql = "SELECT report_id, reporter_id, target_type, target_id, reason, report_time, " +
-                     "status, handler_id, handle_time, handle_note FROM reports WHERE report_id = ?";
+                "status, handler_id, handle_time, handle_note FROM reports WHERE report_id = ?";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, reportId);
@@ -82,7 +86,7 @@ public class ReportDaoImpl implements ReportDao {
                 return extractReport(rs);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("根据举报ID查询举报失败, reportId={}", reportId, e);
         }
         return null;
     }
@@ -98,7 +102,7 @@ public class ReportDaoImpl implements ReportDao {
                 return rs.getInt(1);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("根据状态统计举报数量失败, status={}", status, e);
         }
         return 0;
     }

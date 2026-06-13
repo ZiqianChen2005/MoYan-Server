@@ -63,7 +63,7 @@ public class ApiController {
                 description = "使用手机号和密码登录系统，密码为明文传输（后续升级HTTPS）\n\n" +
                         "【README格式】{\"action\":\"login\",\"params\":{\"phone\":\"13800138000\",\"password\":\"123456\"}}")
         @ApiResponses(value = {
-                @ApiResponse(responseCode = "200", description = "请求成功",
+                @ApiResponse(responseCode = "0", description = "请求成功",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -78,7 +78,7 @@ public class ApiController {
                                 "isBanned": false
                             }
                         }"""))),
-                @ApiResponse(responseCode = "400", description = "登录失败",
+                @ApiResponse(responseCode = "1", description = "登录失败",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -100,7 +100,7 @@ public class ApiController {
                 description = "使用手机号、密码和昵称注册新账号\n\n" +
                         "【README格式】{\"action\":\"register\",\"params\":{\"phone\":\"13800138000\",\"password\":\"123456\",\"nickname\":\"张三\"}}")
         @ApiResponses(value = {
-                @ApiResponse(responseCode = "200", description = "注册成功",
+                @ApiResponse(responseCode = "0", description = "注册成功",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -113,7 +113,7 @@ public class ApiController {
                                 "avatarUrl": ""
                             }
                         }"""))),
-                @ApiResponse(responseCode = "400", description = "注册失败",
+                @ApiResponse(responseCode = "1", description = "注册失败",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -136,7 +136,7 @@ public class ApiController {
                 description = "通过旧密码修改为新密码，新密码长度6-20位\n\n" +
                         "【README格式】{\"action\":\"updatePassword\",\"params\":{\"userId\":1,\"oldPassword\":\"123456\",\"newPassword\":\"654321\"}}")
         @ApiResponses(value = {
-                @ApiResponse(responseCode = "200", description = "修改成功",
+                @ApiResponse(responseCode = "0", description = "修改成功",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -144,7 +144,7 @@ public class ApiController {
                             "msg": "密码修改成功",
                             "data": null
                         }"""))),
-                @ApiResponse(responseCode = "400", description = "修改失败",
+                @ApiResponse(responseCode = "1", description = "修改失败",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -163,7 +163,101 @@ public class ApiController {
         }
     }
 
-    // ... existing code ...
+    @PostMapping("/logout")
+    @Operation(summary = "退出登录",
+            description = "清除用户token，退出登录状态\n\n" +
+                    "【README格式】{\"action\":\"logout\",\"params\":{\"userId\":1}}")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "0", description = "退出成功",
+                    content = @Content(mediaType = "application/json",
+                            examples = @ExampleObject(value = """
+                        {
+                            "code": 0,
+                            "msg": "退出登录成功",
+                            "data": null
+                        }"""))),
+            @ApiResponse(responseCode = "1", description = "退出失败",
+                    content = @Content(mediaType = "application/json",
+                            examples = @ExampleObject(value = """
+                        {
+                            "code": 1,
+                            "msg": "用户ID不能为空",
+                            "data": null
+                        }""")))
+    })
+    public String logout(@RequestBody Map<String, Object> request) {
+        Map<String, Object> params = (Map<String, Object>) request.get("params");
+        Integer userId = ((Number) params.get("userId")).intValue();
+        Response<?> resp = userService.logout(userId);
+        return gson.toJson(resp);
+    }
+
+    @PostMapping("/verify-token")
+    @Operation(summary = "验证Token",
+            description = "验证用户token是否有效，返回用户信息\n\n" +
+                    "【README格式】{\"action\":\"verifyToken\",\"params\":{\"token\":\"eyJhbGci...\"}}")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "0", description = "验证成功",
+                    content = @Content(mediaType = "application/json",
+                            examples = @ExampleObject(value = """
+                        {
+                            "code": 0,
+                            "msg": "token验证成功",
+                            "data": {
+                                "userId": 1,
+                                "phone": "13800138000",
+                                "nickname": "张三",
+                                "avatarUrl": "http://example.com/avatar.jpg",
+                                "warningCount": 0,
+                                "isBanned": false,
+                                "tokenExpireTime": "2026-06-21T10:00:00"
+                            }
+                        }"""))),
+            @ApiResponse(responseCode = "1", description = "验证失败",
+                    content = @Content(mediaType = "application/json",
+                            examples = @ExampleObject(value = """
+                        {
+                            "code": 1,
+                            "msg": "token无效或已过期",
+                            "data": null
+                        }""")))
+    })
+    public String verifyToken(@RequestBody Map<String, Object> request) {
+        Map<String, Object> params = (Map<String, Object>) request.get("params");
+        String token = (String) params.get("token");
+        Response<?> resp = userService.verifyToken(token);
+        return gson.toJson(resp);
+    }
+
+    @PostMapping("/account/delete")
+    @Operation(summary = "注销账号",
+            description = "永久删除用户账号，需要验证密码，操作不可恢复\n\n" +
+                    "【README格式】{\"action\":\"deleteAccount\",\"params\":{\"userId\":1,\"password\":\"123456\"}}")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "0", description = "注销成功",
+                    content = @Content(mediaType = "application/json",
+                            examples = @ExampleObject(value = """
+                        {
+                            "code": 0,
+                            "msg": "账号注销成功",
+                            "data": null
+                        }"""))),
+            @ApiResponse(responseCode = "1", description = "注销失败",
+                    content = @Content(mediaType = "application/json",
+                            examples = @ExampleObject(value = """
+                        {
+                            "code": 1,
+                            "msg": "密码错误",
+                            "data": null
+                        }""")))
+    })
+    public String deleteAccount(@RequestBody Map<String, Object> request) {
+        Map<String, Object> params = (Map<String, Object>) request.get("params");
+        Integer userId = ((Number) params.get("userId")).intValue();
+        String password = (String) params.get("password");
+        Response<?> resp = userService.deleteAccount(userId, password);
+        return gson.toJson(resp);
+    }
 
     @RestController
     @RequestMapping("/api/user")
@@ -175,7 +269,7 @@ public class ApiController {
                 description = "根据用户ID获取用户详细信息\n\n" +
                         "【README格式】{\"action\":\"getUserInfo\",\"params\":{\"userId\":1}}")
         @ApiResponses(value = {
-                @ApiResponse(responseCode = "200", description = "获取成功",
+                @ApiResponse(responseCode = "0", description = "获取成功",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -191,7 +285,7 @@ public class ApiController {
                                 "createTime": "2025-01-01T10:00:00"
                             }
                         }"""))),
-                @ApiResponse(responseCode = "400", description = "获取失败",
+                @ApiResponse(responseCode = "1", description = "获取失败",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -212,7 +306,7 @@ public class ApiController {
                 description = "更新用户昵称，长度2-20位\n\n" +
                         "【README格式】{\"action\":\"updateNickname\",\"params\":{\"userId\":1,\"nickname\":\"新昵称\"}}")
         @ApiResponses(value = {
-                @ApiResponse(responseCode = "200", description = "修改成功",
+                @ApiResponse(responseCode = "0", description = "修改成功",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -220,7 +314,7 @@ public class ApiController {
                             "msg": "昵称修改成功",
                             "data": null
                         }"""))),
-                @ApiResponse(responseCode = "400", description = "修改失败",
+                @ApiResponse(responseCode = "1", description = "修改失败",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -242,7 +336,7 @@ public class ApiController {
                 description = "更新用户头像URL\n\n" +
                         "【README格式】{\"action\":\"updateAvatar\",\"params\":{\"userId\":1,\"avatarUrl\":\"http://图片地址\"}}")
         @ApiResponses(value = {
-                @ApiResponse(responseCode = "200", description = "修改成功",
+                @ApiResponse(responseCode = "0", description = "修改成功",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -250,7 +344,7 @@ public class ApiController {
                             "msg": "头像修改成功",
                             "data": null
                         }"""))),
-                @ApiResponse(responseCode = "400", description = "修改失败",
+                @ApiResponse(responseCode = "1", description = "修改失败",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -280,7 +374,7 @@ public class ApiController {
                 description = "用户发布新帖子，支持匿名发布，需管理员审核后可见\n\n" +
                         "【README格式】{\"action\":\"createPost\",\"params\":{\"userId\":1,\"isAnonymous\":false,\"title\":\"标题\",\"content\":\"内容\",\"tags\":\"诗歌,现代诗\"}}")
         @ApiResponses(value = {
-                @ApiResponse(responseCode = "200", description = "发布成功",
+                @ApiResponse(responseCode = "0", description = "发布成功",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -288,7 +382,7 @@ public class ApiController {
                             "msg": "success",
                             "data": 123
                         }""", description = "返回帖子ID"))),
-                @ApiResponse(responseCode = "200", description = "发布失败",
+                @ApiResponse(responseCode = "0", description = "发布失败",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -313,7 +407,7 @@ public class ApiController {
                 description = "分页获取帖子列表，支持推荐算法排序\n\n" +
                         "【README格式】{\"action\":\"getPostList\",\"params\":{\"page\":1,\"size\":20,\"userId\":1}}")
         @ApiResponses(value = {
-                @ApiResponse(responseCode = "200", description = "获取成功",
+                @ApiResponse(responseCode = "0", description = "获取成功",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -332,7 +426,7 @@ public class ApiController {
                                 }
                             ]
                         }"""))),
-                @ApiResponse(responseCode = "400", description = "获取失败",
+                @ApiResponse(responseCode = "1", description = "获取失败",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -355,7 +449,7 @@ public class ApiController {
                 description = "获取帖子的完整信息，包括所有回复和互动数据\n\n" +
                         "【README格式】{\"action\":\"getPostDetail\",\"params\":{\"postId\":1,\"userId\":1}}")
         @ApiResponses(value = {
-                @ApiResponse(responseCode = "200", description = "获取成功",
+                @ApiResponse(responseCode = "0", description = "获取成功",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -374,7 +468,7 @@ public class ApiController {
                                 "replies": []
                             }
                         }"""))),
-                @ApiResponse(responseCode = "400", description = "获取失败",
+                @ApiResponse(responseCode = "1", description = "获取失败",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -397,7 +491,7 @@ public class ApiController {
                         "【README格式】{\"action\":\"searchPosts\",\"params\":{\"keyword\":\"关键词\",\"tag\":\"标签\",\"sortBy\":\"time\",\"page\":1}}\n\n" +
                         "sortBy可选值：time（最新）、hot（最热）、score（最高分）")
         @ApiResponses(value = {
-                @ApiResponse(responseCode = "200", description = "搜索成功",
+                @ApiResponse(responseCode = "0", description = "搜索成功",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -421,7 +515,7 @@ public class ApiController {
                                 ]
                             }
                         }"""))),
-                @ApiResponse(responseCode = "400", description = "搜索失败",
+                @ApiResponse(responseCode = "1", description = "搜索失败",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -445,7 +539,7 @@ public class ApiController {
                 description = "获取指定用户发布的所有帖子，支持分页\n\n" +
                         "【README格式】{\"action\":\"getPostsByUserId\",\"params\":{\"userId\":1,\"page\":1,\"size\":20}}")
         @ApiResponses(value = {
-                @ApiResponse(responseCode = "200", description = "获取成功",
+                @ApiResponse(responseCode = "0", description = "获取成功",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -468,7 +562,7 @@ public class ApiController {
                                 ]
                             }
                         }"""))),
-                @ApiResponse(responseCode = "400", description = "获取失败",
+                @ApiResponse(responseCode = "1", description = "获取失败",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -497,7 +591,7 @@ public class ApiController {
                 description = "对帖子发布回复，支持匿名，需管理员审核后可见\n\n" +
                         "【README格式】{\"action\":\"createReply\",\"params\":{\"postId\":1,\"userId\":1,\"isAnonymous\":false,\"content\":\"回复内容\"}}")
         @ApiResponses(value = {
-                @ApiResponse(responseCode = "200", description = "发布成功",
+                @ApiResponse(responseCode = "0", description = "发布成功",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -505,7 +599,7 @@ public class ApiController {
                             "msg": "success",
                             "data": 456
                         }""", description = "返回回复ID"))),
-                @ApiResponse(responseCode = "400", description = "发布失败",
+                @ApiResponse(responseCode = "1", description = "发布失败",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -529,7 +623,7 @@ public class ApiController {
                 description = "分页获取指定帖子的所有回复\n\n" +
                         "【README格式】{\"action\":\"getReplies\",\"params\":{\"postId\":1,\"page\":1}}")
         @ApiResponses(value = {
-                @ApiResponse(responseCode = "200", description = "获取成功",
+                @ApiResponse(responseCode = "0", description = "获取成功",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -554,7 +648,7 @@ public class ApiController {
                                 }
                             ]
                         }"""))),
-                @ApiResponse(responseCode = "400", description = "获取失败",
+                @ApiResponse(responseCode = "1", description = "获取失败",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -584,7 +678,7 @@ public class ApiController {
                 description = "对帖子进行评分（标签准确度1-5分 + 文章质量1-5分）\n\n" +
                         "【README格式】{\"action\":\"ratePost\",\"params\":{\"postId\":1,\"userId\":1,\"tagAccuracy\":4,\"articleScore\":5,\"comment\":\"评论\"}}")
         @ApiResponses(value = {
-                @ApiResponse(responseCode = "200", description = "评分成功",
+                @ApiResponse(responseCode = "0", description = "评分成功",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -592,7 +686,7 @@ public class ApiController {
                             "msg": "评分成功",
                             "data": null
                         }"""))),
-                @ApiResponse(responseCode = "400", description = "评分失败",
+                @ApiResponse(responseCode = "1", description = "评分失败",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -617,7 +711,7 @@ public class ApiController {
                 description = "打赏帖子，平台抽成8%\n\n" +
                         "【README格式】{\"action\":\"tipPost\",\"params\":{\"postId\":1,\"fromUserId\":1,\"amount\":10}}")
         @ApiResponses(value = {
-                @ApiResponse(responseCode = "200", description = "打赏成功",
+                @ApiResponse(responseCode = "0", description = "打赏成功",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -629,7 +723,7 @@ public class ApiController {
                                 "authorReceive": 9.20
                             }
                         }"""))),
-                @ApiResponse(responseCode = "400", description = "打赏失败",
+                @ApiResponse(responseCode = "1", description = "打赏失败",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -653,7 +747,7 @@ public class ApiController {
                         "【README格式】{\"action\":\"report\",\"params\":{\"reporterId\":1,\"targetType\":1,\"targetId\":1,\"reason\":\"举报原因\"}}\n\n" +
                         "targetType=1表示帖子，2表示回复")
         @ApiResponses(value = {
-                @ApiResponse(responseCode = "200", description = "举报成功",
+                @ApiResponse(responseCode = "0", description = "举报成功",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -661,7 +755,7 @@ public class ApiController {
                             "msg": "举报成功，我们会尽快处理",
                             "data": null
                         }"""))),
-                @ApiResponse(responseCode = "400", description = "举报失败",
+                @ApiResponse(responseCode = "1", description = "举报失败",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -693,7 +787,7 @@ public class ApiController {
                 description = "获取今日的续写任务或其他互动任务\n\n" +
                         "【README格式】{\"action\":\"getTodayTask\",\"params\":{}}")
         @ApiResponses(value = {
-                @ApiResponse(responseCode = "200", description = "获取成功",
+                @ApiResponse(responseCode = "0", description = "获取成功",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -706,7 +800,7 @@ public class ApiController {
                                 "content": "原文内容..."
                             }
                         }"""))),
-                @ApiResponse(responseCode = "400", description = "获取失败",
+                @ApiResponse(responseCode = "1", description = "获取失败",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -725,7 +819,7 @@ public class ApiController {
                 description = "提交今日任务的回答内容，每个用户每天只能提交一次\n\n" +
                         "【README格式】{\"action\":\"submitTaskAnswer\",\"params\":{\"taskId\":1,\"userId\":1,\"content\":\"回答内容\"}}")
         @ApiResponses(value = {
-                @ApiResponse(responseCode = "200", description = "提交成功",
+                @ApiResponse(responseCode = "0", description = "提交成功",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -733,7 +827,7 @@ public class ApiController {
                             "msg": "提交成功",
                             "data": null
                         }"""))),
-                @ApiResponse(responseCode = "400", description = "提交失败",
+                @ApiResponse(responseCode = "1", description = "提交失败",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -756,7 +850,7 @@ public class ApiController {
                 description = "获取指定任务的前N名高分优质回答\n\n" +
                         "【README格式】{\"action\":\"getTopAnswers\",\"params\":{\"taskId\":1,\"limit\":3}}")
         @ApiResponses(value = {
-                @ApiResponse(responseCode = "200", description = "获取成功",
+                @ApiResponse(responseCode = "0", description = "获取成功",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -772,7 +866,7 @@ public class ApiController {
                                 }
                             ]
                         }"""))),
-                @ApiResponse(responseCode = "400", description = "获取失败",
+                @ApiResponse(responseCode = "1", description = "获取失败",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -794,7 +888,7 @@ public class ApiController {
                 description = "检查用户今日是否已经提交过任务\n\n" +
                         "【README格式】{\"action\":\"hasSubmitted\",\"params\":{\"taskId\":1,\"userId\":1}}")
         @ApiResponses(value = {
-                @ApiResponse(responseCode = "200", description = "查询成功",
+                @ApiResponse(responseCode = "0", description = "查询成功",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -805,7 +899,7 @@ public class ApiController {
                                 "submitTime": "2025-05-26T10:00:00"
                             }
                         }"""))),
-                @ApiResponse(responseCode = "400", description = "查询失败",
+                @ApiResponse(responseCode = "1", description = "查询失败",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -835,7 +929,7 @@ public class ApiController {
                 description = "管理员审核通过帖子，帖子正式发布\n\n" +
                         "【README格式】{\"action\":\"approvePost\",\"params\":{\"postId\":1,\"adminId\":1}}")
         @ApiResponses(value = {
-                @ApiResponse(responseCode = "200", description = "审核通过",
+                @ApiResponse(responseCode = "0", description = "审核通过",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -843,7 +937,7 @@ public class ApiController {
                             "msg": "帖子审核通过",
                             "data": null
                         }"""))),
-                @ApiResponse(responseCode = "400", description = "审核失败",
+                @ApiResponse(responseCode = "1", description = "审核失败",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -865,7 +959,7 @@ public class ApiController {
                 description = "管理员拒绝帖子审核，需填写拒绝原因\n\n" +
                         "【README格式】{\"action\":\"rejectPost\",\"params\":{\"postId\":1,\"adminId\":1,\"reason\":\"拒绝原因\"}}")
         @ApiResponses(value = {
-                @ApiResponse(responseCode = "200", description = "审核拒绝",
+                @ApiResponse(responseCode = "0", description = "审核拒绝",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -873,7 +967,7 @@ public class ApiController {
                             "msg": "帖子已拒绝",
                             "data": null
                         }"""))),
-                @ApiResponse(responseCode = "400", description = "审核失败",
+                @ApiResponse(responseCode = "1", description = "审核失败",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -896,7 +990,7 @@ public class ApiController {
                 description = "管理员审核通过回复\n\n" +
                         "【README格式】{\"action\":\"approveReply\",\"params\":{\"replyId\":1,\"adminId\":1}}")
         @ApiResponses(value = {
-                @ApiResponse(responseCode = "200", description = "审核通过",
+                @ApiResponse(responseCode = "0", description = "审核通过",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -904,7 +998,7 @@ public class ApiController {
                             "msg": "回复审核通过",
                             "data": null
                         }"""))),
-                @ApiResponse(responseCode = "400", description = "审核失败",
+                @ApiResponse(responseCode = "1", description = "审核失败",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -926,7 +1020,7 @@ public class ApiController {
                 description = "管理员拒绝回复审核\n\n" +
                         "【README格式】{\"action\":\"rejectReply\",\"params\":{\"replyId\":1,\"adminId\":1,\"reason\":\"拒绝原因\"}}")
         @ApiResponses(value = {
-                @ApiResponse(responseCode = "200", description = "审核拒绝",
+                @ApiResponse(responseCode = "0", description = "审核拒绝",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -934,7 +1028,7 @@ public class ApiController {
                             "msg": "回复已拒绝",
                             "data": null
                         }"""))),
-                @ApiResponse(responseCode = "400", description = "审核失败",
+                @ApiResponse(responseCode = "1", description = "审核失败",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -958,7 +1052,7 @@ public class ApiController {
                         "【README格式】{\"action\":\"handleReport\",\"params\":{\"reportId\":1,\"handlerId\":1,\"action\":1,\"note\":\"处理备注\"}}\n\n" +
                         "action=1撤下并警告，2仅警告，3驳回举报")
         @ApiResponses(value = {
-                @ApiResponse(responseCode = "200", description = "处理成功",
+                @ApiResponse(responseCode = "0", description = "处理成功",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -966,7 +1060,7 @@ public class ApiController {
                             "msg": "举报处理完成",
                             "data": null
                         }"""))),
-                @ApiResponse(responseCode = "400", description = "处理失败",
+                @ApiResponse(responseCode = "1", description = "处理失败",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -990,7 +1084,7 @@ public class ApiController {
                 description = "警告用户，警告3次自动封禁\n\n" +
                         "【README格式】{\"action\":\"addWarning\",\"params\":{\"userId\":1}}")
         @ApiResponses(value = {
-                @ApiResponse(responseCode = "200", description = "警告成功",
+                @ApiResponse(responseCode = "0", description = "警告成功",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -1000,7 +1094,7 @@ public class ApiController {
                                 "warningCount": 1
                             }
                         }"""))),
-                @ApiResponse(responseCode = "400", description = "警告失败",
+                @ApiResponse(responseCode = "1", description = "警告失败",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -1021,7 +1115,7 @@ public class ApiController {
                 description = "封禁用户账号，封禁后无法发布帖子/回复\n\n" +
                         "【README格式】{\"action\":\"banUser\",\"params\":{\"userId\":1}}")
         @ApiResponses(value = {
-                @ApiResponse(responseCode = "200", description = "封禁成功",
+                @ApiResponse(responseCode = "0", description = "封禁成功",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -1029,7 +1123,7 @@ public class ApiController {
                             "msg": "用户已封禁",
                             "data": null
                         }"""))),
-                @ApiResponse(responseCode = "400", description = "封禁失败",
+                @ApiResponse(responseCode = "1", description = "封禁失败",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -1050,7 +1144,7 @@ public class ApiController {
                 description = "解除用户封禁状态\n\n" +
                         "【README格式】{\"action\":\"unbanUser\",\"params\":{\"userId\":1}}")
         @ApiResponses(value = {
-                @ApiResponse(responseCode = "200", description = "解封成功",
+                @ApiResponse(responseCode = "0", description = "解封成功",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -1058,7 +1152,7 @@ public class ApiController {
                             "msg": "用户已解封",
                             "data": null
                         }"""))),
-                @ApiResponse(responseCode = "400", description = "解封失败",
+                @ApiResponse(responseCode = "1", description = "解封失败",
                         content = @Content(mediaType = "application/json",
                                 examples = @ExampleObject(value = """
                         {
@@ -1085,7 +1179,7 @@ public class ApiController {
         @GetMapping("/health")
         @Operation(summary = "健康检查",
                 description = "检查服务是否正常运行，用于监控和负载均衡")
-        @ApiResponse(responseCode = "200", description = "服务正常",
+        @ApiResponse(responseCode = "0", description = "服务正常",
                 content = @Content(mediaType = "application/json",
                         examples = @ExampleObject(value = """
                     {
@@ -1108,7 +1202,7 @@ public class ApiController {
         @GetMapping("/info")
         @Operation(summary = "系统信息",
                 description = "获取系统版本、API文档等信息")
-        @ApiResponse(responseCode = "200", description = "获取成功",
+        @ApiResponse(responseCode = "0", description = "获取成功",
                 content = @Content(mediaType = "application/json",
                         examples = @ExampleObject(value = """
                     {

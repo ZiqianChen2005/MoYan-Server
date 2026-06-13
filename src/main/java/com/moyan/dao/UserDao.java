@@ -7,10 +7,11 @@ public interface UserDao {
     User findByUserId(Integer userId);
     User findByPhone(String phone);
     User findByNickname(String nickname);
-    
-    // 新增：根据手机号和密码查找用户（登录验证）
+
     User findByPhoneAndPassword(String phone, String passwordHash);
-    
+
+    User findByToken(String token);
+
     int insert(User user);
     int update(User user);
     int updateLastLoginTime(Integer userId);
@@ -23,4 +24,7 @@ public interface UserDao {
     int countAll();
     int updatePassword(Integer userId, String newPasswordHash);
     boolean existsByPhone(String phone);
+    int deleteUser(Integer userId);
+    int updateToken(Integer userId, String token, java.util.Date expireTime);
+    int clearToken(Integer userId);
 }

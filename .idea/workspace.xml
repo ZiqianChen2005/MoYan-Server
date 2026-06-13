@@ -5,9 +5,24 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5fbb4c0d-7f71-4d9c-8f8b-e9d683f5edee" name="更改" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/data_sources_history.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/data_sources_history.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/data_source_mapping.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/moyan/config/WebSocketConfig.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/controller/ApiController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/controller/ApiController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/dao/UserDao.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/dao/UserDao.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/AnonymousMappingDaoImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/AnonymousMappingDaoImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/DailyTaskDaoImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/DailyTaskDaoImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/PostDaoImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/PostDaoImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/RatingDaoImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/RatingDaoImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/ReplyDaoImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/ReplyDaoImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/ReportDaoImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/ReportDaoImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/TaskAnswerDaoImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/TaskAnswerDaoImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/TipDaoImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/TipDaoImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/UserDaoImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/UserDaoImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/entity/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/entity/User.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/server/SocketServer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/server/WebSocketServer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/service/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/service/UserService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/service/impl/UserServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/service/impl/UserServiceImpl.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -63,6 +78,12 @@
     "project.structure.side.proportion": "0.0",
     "vue.rearranger.settings.migration": "true",
     "应用程序.SocketServer.executor": "Run"
+  },
+  "keyToStringList": {
+    "com.intellij.ide.scratch.LRUPopupBuilder$1/SQL 方言": [
+      "TSQL",
+      "SQL92"
+    ]
   }
 }]]></component>
   <component name="RecentsManager">
@@ -111,10 +132,22 @@
       <workItem from="1781318142261" duration="4063000" />
       <workItem from="1781322243612" duration="403000" />
       <workItem from="1781357438416" duration="3183000" />
+      <workItem from="1781376266368" duration="3372000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
 </project>

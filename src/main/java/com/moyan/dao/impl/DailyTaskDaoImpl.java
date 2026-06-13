@@ -3,6 +3,8 @@ package com.moyan.dao.impl;
 import com.moyan.dao.DailyTaskDao;
 import com.moyan.entity.DailyTask;
 import com.moyan.util.DBUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Date;
@@ -10,10 +12,12 @@ import java.util.List;
 
 public class DailyTaskDaoImpl implements DailyTaskDao {
 
+    private static final Logger log = LoggerFactory.getLogger(DailyTaskDaoImpl.class);
+
     @Override
     public DailyTask findByDate(Date date) {
         String sql = "SELECT task_id, task_type, title, content, publish_date, is_active " +
-                     "FROM daily_tasks WHERE CAST(publish_date AS DATE) = CAST(? AS DATE) AND is_active = 1";
+                "FROM daily_tasks WHERE CAST(publish_date AS DATE) = CAST(? AS DATE) AND is_active = 1";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setDate(1, new java.sql.Date(date.getTime()));
@@ -22,7 +26,7 @@ public class DailyTaskDaoImpl implements DailyTaskDao {
                 return extractTask(rs);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("根据日期查询每日任务失败, date={}", date, e);
         }
         return null;
     }
@@ -30,7 +34,7 @@ public class DailyTaskDaoImpl implements DailyTaskDao {
     @Override
     public int insert(DailyTask task) {
         String sql = "INSERT INTO daily_tasks (task_type, title, content, publish_date, is_active) " +
-                     "VALUES (?, ?, ?, ?, ?)";
+                "VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, task.getTaskType());
@@ -46,7 +50,7 @@ public class DailyTaskDaoImpl implements DailyTaskDao {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("插入每日任务失败, task={}", task, e);
         }
         return -1;
     }
@@ -54,7 +58,7 @@ public class DailyTaskDaoImpl implements DailyTaskDao {
     @Override
     public int update(DailyTask task) {
         String sql = "UPDATE daily_tasks SET task_type = ?, title = ?, content = ?, is_active = ? " +
-                     "WHERE task_id = ?";
+                "WHERE task_id = ?";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, task.getTaskType());
@@ -64,7 +68,7 @@ public class DailyTaskDaoImpl implements DailyTaskDao {
             ps.setInt(5, task.getTaskId());
             return ps.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("更新每日任务失败, task={}", task, e);
         }
         return 0;
     }
@@ -74,8 +78,8 @@ public class DailyTaskDaoImpl implements DailyTaskDao {
         List<DailyTask> list = new ArrayList<>();
         int offset = (page - 1) * size;
         String sql = "SELECT task_id, task_type, title, content, publish_date, is_active " +
-                     "FROM daily_tasks ORDER BY publish_date DESC " +
-                     "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+                "FROM daily_tasks ORDER BY publish_date DESC " +
+                "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, offset);
@@ -85,7 +89,7 @@ public class DailyTaskDaoImpl implements DailyTaskDao {
                 list.add(extractTask(rs));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("分页查询每日任务列表失败, page={}, size={}", page, size, e);
         }
         return list;
     }
@@ -93,7 +97,7 @@ public class DailyTaskDaoImpl implements DailyTaskDao {
     @Override
     public DailyTask findByTaskId(Integer taskId) {
         String sql = "SELECT task_id, task_type, title, content, publish_date, is_active " +
-                     "FROM daily_tasks WHERE task_id = ?";
+                "FROM daily_tasks WHERE task_id = ?";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, taskId);
@@ -102,7 +106,7 @@ public class DailyTaskDaoImpl implements DailyTaskDao {
                 return extractTask(rs);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("根据任务ID查询每日任务失败, taskId={}", taskId, e);
         }
         return null;
     }
