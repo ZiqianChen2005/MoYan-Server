@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>举报处理</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <style>
+        .report-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            transition: all 0.3s;
+        }
+        .report-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .target-content {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 12px 0;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        .reason {
+            color: #e67e22;
+            margin: 8px 0;
+            padding: 8px;
+            background: #fef3e2;
+            border-radius: 8px;
+        }
+        .btn-group-sm {
+            gap: 8px;
+        }
+        .tabs {
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        .tab {
+            display: inline-block;
+            padding: 10px 24px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .tab.active {
+            color: #667eea;
+            border-bottom: 2px solid #667eea;
+            margin-bottom: -2px;
+            font-weight: 500;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+        .status-0 { background: #ffc107; color: #000; }
+        .status-1 { background: #28a745; color: #fff; }
+        .status-2 { background: #6c757d; color: #fff; }
+        .target-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            background: #e9ecef;
+        }
+        .pagination {
+            margin-top: 20px;
+            justify-content: center;
+        }
+        .filter-bar {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+<div style="padding: 20px;">
+    <div class="tabs">
+        <div class="tab active" data-status="0">待处理 (<span id="pendingCount">0</span>)</div>
+        <div class="tab" data-status="1">已处理</div>
+        <div class="tab" data-status="2">已驳回</div>
+    </div>
+
+    <div class="filter-bar">
+        <select class="form-select" id="typeFilter" style="width: 150px;">
+            <option value="">全部类型</option>
+            <option value="1">帖子举报</option>
+            <option value="2">回复举报</option>
+        </select>
+        <button class="btn btn-outline-primary btn-sm" onclick="searchReports()">
+            <i class="bi bi-search"></i> 搜索
+        </button>
+        <button class="btn btn-outline-secondary btn-sm" onclick="resetFilter()">
+            <i class="bi bi-arrow-repeat"></i> 重置
+        </button>
+    </div>
+
+    <div id="reportsList"></div>
+
+    <nav id="paginationNav">
+        <ul class="pagination" id="pagination"></ul>
+    </nav>
+</div>
+
+<div class="modal fade" id="actionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="actionModalTitle">处理举报</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>被举报内容：</strong></p>
+                <div class="alert alert-secondary" id="modalTargetContent" style="max-height: 200px; overflow-y: auto;"></div>
+                <p><strong>举报理由：</strong> <span id="modalReason"></span></p>
+                <div class="mb-3">
+                    <label class="form-label">处理备注</label>
+                    <textarea class="form-control" id="handleNote" rows="2" placeholder="填写处理说明..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-warning" onclick="submitAction('warn')">仅警告</button>
+                <button type="button" class="btn btn-danger" onclick="submitAction('remove')">撤下并警告</button>
+                <button type="button" class="btn btn-secondary" onclick="submitAction('reject')">驳回举报</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const API_BASE = '';
+    let currentStatus = 0;
+    let currentPage = 1;
+    let totalPages = 1;
+    let filterType = '';
+    let actionModal = null;
+    let currentReportId = null;
+    let handlerId = 1; // 实际应从登录信息获取
+
+    const pageSize = 10;
+
+    async function apiRequest(action, params) {
+        const response = await fetch(`${API_BASE}${action}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: action.split('/').pop(), params })
+        });
+        return response.json();
+    }
+
+    // 注意：这里需要 ReportController 提供相应的API
+    // 由于你提供的 ReportService 接口不完整，这里假设有以下API端点
+    // /api/report/admin/list - 获取举报列表
+    // /api/report/admin/detail - 获取举报详情
+    // /api/admin/report/handle - 处理举报
+
+    async function loadReports() {
+        const params = {
+            status: currentStatus,
+            page: currentPage,
+            size: pageSize
+        };
+        if (filterType) params.targetType = parseInt(filterType);
+
+        try {
+            // 假设有 /api/report/admin/list 接口
+            const data = await apiRequest('/api/report/admin/list', params);
+            if (data.code === 0 && data.data) {
+                renderReports(data.data.list);
+                renderPagination(data.data.totalPages);
+                document.getElementById('pendingCount').textContent = data.data.pendingCount || 0;
+            }
+        } catch (e) {
+            console.error("加载失败", e);
+            // 使用模拟数据演示
+            renderMockReports();
+        }
+    }
+
+    // 模拟数据（实际应从API获取）
+    function renderMockReports() {
+        const mockReports = [
+            {
+                reportId: 1,
+                targetType: 1,
+                targetTypeText: '📄 帖子',
+                targetContent: '这是一篇违规的帖子内容示例...',
+                reason: '包含不当言论',
+                reportTime: '2025-05-26 10:00:00',
+                reporterNickname: '举报者A',
+                status: 0
+            },
+            {
+                reportId: 2,
+                targetType: 2,
+                targetTypeText: '💬 回复',
+                targetContent: '这是一个违规的回复内容...',
+                reason: '广告 spam',
+                reportTime: '2025-05-26 11:00:00',
+                reporterNickname: '举报者B',
+                status: 0
+            }
+        ];
+
+        renderReports(mockReports);
+    }
+
+    function renderReports(reports) {
+        const container = document.getElementById('reportsList');
+        if (!reports || reports.length === 0) {
+            container.innerHTML = '<div class="text-center text-muted" style="padding: 60px;">📭 暂无举报</div>';
+            return;
+        }
+
+        container.innerHTML = reports.map(report => {
+            let statusText = '';
+            if (report.status === 0) statusText = '<span class="status-badge status-0">待处理</span>';
+            else if (report.status === 1) statusText = '<span class="status-badge status-1">已处理</span>';
+            else if (report.status === 2) statusText = '<span class="status-badge status-2">已驳回</span>';
+
+            let targetTypeText = report.targetType === 1 ? '📄 帖子' : '💬 回复';
+
+            return `
+                    <div class="report-card">
+                        <div class="report-header">
+                            <div>
+                                <span class="target-badge">${targetTypeText}</span>
+                                ${statusText}
+                            </div>
+                            <span><i class="bi bi-clock"></i> ${report.reportTime || ''}</span>
+                        </div>
+                        <div><strong>举报人：</strong> ${escapeHtml(report.reporterNickname || ('用户' + report.reporterId))}</div>
+                        <div class="target-content">
+                            <strong>被举报内容：</strong><br>
+                            ${escapeHtml(report.targetContent || '无内容')}
+                        </div>
+                        <div class="reason">
+                            <i class="bi bi-exclamation-triangle"></i> <strong>举报理由：</strong> ${escapeHtml(report.reason)}
+                        </div>
+                        ${report.status === 0 ? `
+                            <div class="btn-group-sm mt-3">
+                                <button class="btn btn-danger btn-sm" onclick="openActionModal(${report.reportId}, 'remove')">
+                                    <i class="bi bi-trash"></i> 撤下并警告
+                                </button>
+                                <button class="btn btn-warning btn-sm" onclick="openActionModal(${report.reportId}, 'warn')">
+                                    <i class="bi bi-exclamation-triangle"></i> 仅警告
+                                </button>
+                                <button class="btn btn-secondary btn-sm" onclick="openActionModal(${report.reportId}, 'reject')">
+                                    <i class="bi bi-x-circle"></i> 驳回举报
+                                </button>
+                            </div>
+                        ` : `
+                            <div class="mt-3 text-muted small">
+                                <i class="bi bi-info-circle"></i> 处理人：${escapeHtml(report.handlerNickname || '系统')}
+                                ${report.handleTime ? ' | 处理时间：' + report.handleTime : ''}
+                                ${report.handleNote ? ' | 备注：' + escapeHtml(report.handleNote) : ''}
+                            </div>
+                        `}
+                    </div>
+                `;
+        }).join('');
+    }
+
+    function renderPagination(total) {
+        totalPages = total;
+        const pagination = document.getElementById('pagination');
+        if (totalPages <= 1) {
+            pagination.innerHTML = '';
+            return;
+        }
+
+        let html = '';
+        if (currentPage > 1) {
+            html += `<li class="page-item"><a class="page-link" href="#" onclick="goPage(${currentPage - 1})">上一页</a></li>`;
+        }
+
+        for (let i = 1; i <= totalPages; i++) {
+            if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+                html += `<li class="page-item ${i === currentPage ? 'active' : ''}"><a class="page-link" href="#" onclick="goPage(${i})">${i}</a></li>`;
+            } else if (i === currentPage - 3 || i === currentPage + 3) {
+                html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+            }
+        }
+
+        if (currentPage < totalPages) {
+            html += `<li class="page-item"><a class="page-link" href="#" onclick="goPage(${currentPage + 1})">下一页</a></li>`;
+        }
+
+        pagination.innerHTML = html;
+    }
+
+    function goPage(page) {
+        currentPage = page;
+        loadReports();
+    }
+
+    function searchReports() {
+        filterType = document.getElementById('typeFilter').value;
+        currentPage = 1;
+        loadReports();
+    }
+
+    function resetFilter() {
+        document.getElementById('typeFilter').value = '';
+        filterType = '';
+        currentPage = 1;
+        loadReports();
+    }
+
+    let currentAction = null;
+
+    async function openActionModal(reportId, action) {
+        currentReportId = reportId;
+        currentAction = action;
+
+        try {
+            // 假设有 /api/report/admin/detail 接口
+            const data = await apiRequest('/api/report/admin/detail', { reportId: reportId });
+            if (data.code === 0 && data.data) {
+                document.getElementById('modalTargetContent').innerHTML = escapeHtml(data.data.targetContent || '无内容');
+                document.getElementById('modalReason').innerHTML = escapeHtml(data.data.reason);
+                document.getElementById('handleNote').value = '';
+
+                let title = '';
+                if (action === 'remove') title = '撤下内容并警告用户';
+                else if (action === 'warn') title = '仅警告用户';
+                else if (action === 'reject') title = '驳回举报';
+                document.getElementById('actionModalTitle').textContent = title;
+
+                actionModal.show();
+            }
+        } catch (e) {
+            console.error('获取举报详情失败', e);
+            // 模拟数据显示
+            document.getElementById('modalTargetContent').innerHTML = '模拟内容示例...';
+            document.getElementById('modalReason').innerHTML = '模拟举报理由';
+            actionModal.show();
+        }
+    }
+
+    async function submitAction(action) {
+        const note = document.getElementById('handleNote').value;
+        let actionCode = 1; // 默认撤下并警告
+        if (action === 'warn') actionCode = 2;
+        else if (action === 'reject') actionCode = 3;
+        else actionCode = 1;
+
+        try {
+            const data = await apiRequest('/api/admin/report/handle', {
+                reportId: currentReportId,
+                handlerId: handlerId,
+                action: actionCode,
+                note: note
+            });
+            if (data.code === 0) {
+                actionModal.hide();
+                loadReports();
+            } else {
+                alert('操作失败：' + data.msg);
+            }
+        } catch (e) {
+            console.error('操作失败', e);
+            alert('操作失败：' + e.message);
+        }
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            currentStatus = parseInt(this.getAttribute('data-status'));
+            currentPage = 1;
+            loadReports();
+        });
+    });
+
+    actionModal = new bootstrap.Modal(document.getElementById('actionModal'));
+    loadReports();
+</script>
+</body>
+</html>

@@ -5,24 +5,52 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5fbb4c0d-7f71-4d9c-8f8b-e9d683f5edee" name="更改" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/data_source_mapping.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/moyan/config/WebSocketConfig.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/moyan/controller/ReportController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/data_sources_history.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/data_sources_history.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/controller/ApiController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/controller/ApiController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/dao/UserDao.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/dao/UserDao.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/AnonymousMappingDaoImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/AnonymousMappingDaoImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/DailyTaskDaoImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/DailyTaskDaoImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/dao/PostDao.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/dao/PostDao.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/dao/ReplyDao.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/dao/ReplyDao.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/dao/ReportDao.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/dao/ReportDao.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/PostDaoImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/PostDaoImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/RatingDaoImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/RatingDaoImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/ReplyDaoImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/ReplyDaoImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/ReportDaoImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/ReportDaoImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/TaskAnswerDaoImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/TaskAnswerDaoImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/TipDaoImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/TipDaoImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/UserDaoImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/dao/impl/UserDaoImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/entity/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/entity/User.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/server/SocketServer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/server/WebSocketServer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/service/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/service/UserService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/service/impl/UserServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/service/impl/UserServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/dto/PostListDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/dto/PostListDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/dto/ReplyDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/dto/ReplyDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/service/PostService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/service/PostService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/service/ReplyService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/service/ReplyService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/service/ReportService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/service/ReportService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/service/impl/PostServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/service/impl/PostServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/service/impl/ReplyServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/service/impl/ReplyServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/moyan/service/impl/ReportServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/moyan/service/impl/ReportServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/META-INF/MANIFEST.MF" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/WEB-INF/lib/commons-dbcp2-2.9.0.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/WEB-INF/lib/commons-logging-1.2.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/WEB-INF/lib/commons-pool2-2.11.1.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/WEB-INF/lib/gson-2.10.1.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/WEB-INF/lib/mssql-jdbc-13.4.0.jre8.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/admin/audit-action.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/static/admin/audit-action.jsp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/admin/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/static/admin/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/admin/login.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/static/admin/login.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/admin/pages/dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/static/admin/pages/dashboard.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/admin/pages/posts.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/static/admin/pages/posts.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/admin/pages/publishers.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/static/admin/pages/publishers.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/admin/pages/replies.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/static/admin/pages/replies.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/admin/pages/reports.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/static/admin/pages/reports.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/admin/pages/tasks.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/static/admin/pages/tasks.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/admin/pages/users.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/static/admin/pages/users.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/admin/post-detail-api.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/static/admin/post-detail-api.jsp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/admin/post-titles-api.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/static/admin/post-titles-api.jsp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/admin/posts-api.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/static/admin/posts-api.jsp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/admin/replies-api.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/static/admin/replies-api.jsp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/admin/reply-audit-action.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/static/admin/reply-audit-action.jsp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/admin/reply-batch-action.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/static/admin/reply-batch-action.jsp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/admin/reply-detail-api.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/static/admin/reply-detail-api.jsp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/admin/report-action.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/static/admin/report-action.jsp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/admin/report-detail-api.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/static/admin/report-detail-api.jsp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/admin/reports-api.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/static/admin/reports-api.jsp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/application.properties" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -54,40 +82,42 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RequestMappingsPanelOrder0": "0",
-    "RequestMappingsPanelOrder1": "1",
-    "RequestMappingsPanelWidth0": "75",
-    "RequestMappingsPanelWidth1": "75",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "Spring Boot.MoYanApplication.executor": "Run",
-    "Spring Boot.SocketServer.executor": "Run",
-    "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "reframe-test",
-    "ignore.virus.scanning.warn.message": "true",
-    "kotlin-language-version-configured": "true",
-    "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "模块",
-    "project.structure.proportion": "0.0",
-    "project.structure.side.proportion": "0.0",
-    "vue.rearranger.settings.migration": "true",
-    "应用程序.SocketServer.executor": "Run"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
+    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
+    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
+    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;Spring Boot.MoYanApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.SocketServer.executor&quot;: &quot;Run&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;模块&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;,
+    &quot;应用程序.SocketServer.executor&quot;: &quot;Run&quot;
   },
-  "keyToStringList": {
-    "com.intellij.ide.scratch.LRUPopupBuilder$1/SQL 方言": [
-      "TSQL",
-      "SQL92"
+  &quot;keyToStringList&quot;: {
+    &quot;com.intellij.ide.scratch.LRUPopupBuilder$1/SQL 方言&quot;: [
+      &quot;TSQL&quot;,
+      &quot;SQL92&quot;
     ]
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\GitHub\MoYan-Server\src\main\resources\static" />
+      <recent name="D:\GitHub\MoYan-Server\src\main\resources\static\admin" />
       <recent name="D:\GitHub\MoYan-Server\web\WEB-INF" />
     </key>
   </component>
@@ -133,6 +163,7 @@
       <workItem from="1781322243612" duration="403000" />
       <workItem from="1781357438416" duration="3183000" />
       <workItem from="1781376266368" duration="3372000" />
+      <workItem from="1781535690373" duration="1203000" />
     </task>
     <servers />
   </component>

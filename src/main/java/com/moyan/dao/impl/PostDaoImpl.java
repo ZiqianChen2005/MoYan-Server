@@ -290,4 +290,28 @@ public class PostDaoImpl implements PostDao {
         }
         return post;
     }
+
+    // 在 PostDaoImpl.java 中添加
+    @Override
+    public List<Post> findByStatus(Integer status, int page, int size) {
+        List<Post> list = new ArrayList<>();
+        int offset = (page - 1) * size;
+        String sql = "SELECT p.*, u.nickname as author_nickname " +
+                "FROM posts p LEFT JOIN users u ON p.user_id = u.user_id " +
+                "WHERE p.status = ? ORDER BY p.post_time DESC " +
+                "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, status);
+            ps.setInt(2, offset);
+            ps.setInt(3, size);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(extractPost(rs));
+            }
+        } catch (SQLException e) {
+            log.error("根据状态查询帖子列表失败, status={}, page={}, size={}", status, page, size, e);
+        }
+        return list;
+    }
 }

@@ -16,4 +16,6 @@ public interface PostDao {
     int countByUserId(Integer userId);
     int countPending();
     int countByStatus(Integer status);
+    // 在 PostDao.java 中添加
+    List<Post> findByStatus(Integer status, int page, int size);
 }

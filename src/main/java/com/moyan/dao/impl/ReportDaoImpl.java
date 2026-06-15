@@ -15,19 +15,25 @@ public class ReportDaoImpl implements ReportDao {
 
     @Override
     public int insert(Report report) {
-        String sql = "INSERT INTO reports (reporter_id, target_type, target_id, reason, status) " +
-                "VALUES (?, ?, ?, ?, 0)";
+        String sql = "INSERT INTO reports (reporter_id, target_type, target_id, reason, status, report_time) " +
+                "VALUES (?, ?, ?, ?, 0, GETDATE())";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, report.getReporterId());
             ps.setInt(2, report.getTargetType());
             ps.setInt(3, report.getTargetId());
             ps.setString(4, report.getReason());
-            return ps.executeUpdate();
+            int affected = ps.executeUpdate();
+            if (affected > 0) {
+                ResultSet rs = ps.getGeneratedKeys();
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
         } catch (SQLException e) {
-            log.error("插入举报记录失败, report={}", report, e);
+            log.error("插入举报记录失败", e);
         }
-        return 0;
+        return -1;
     }
 
     @Override
@@ -46,30 +52,41 @@ public class ReportDaoImpl implements ReportDao {
             ps.setInt(4, reportId);
             return ps.executeUpdate();
         } catch (SQLException e) {
-            log.error("更新举报状态失败, reportId={}, status={}", reportId, status, e);
+            log.error("更新举报状态失败, reportId={}", reportId, e);
         }
         return 0;
     }
 
     @Override
-    public List<Report> findByStatus(Integer status, int page, int size) {
+    public List<Report> findByStatus(Integer status, int page, int size, Integer targetType) {
         List<Report> list = new ArrayList<>();
         int offset = (page - 1) * size;
-        String sql = "SELECT report_id, reporter_id, target_type, target_id, reason, report_time, " +
-                "status, handler_id, handle_time, handle_note " +
-                "FROM reports WHERE status = ? ORDER BY report_time ASC " +
-                "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+
+        StringBuilder sql = new StringBuilder(
+                "SELECT report_id, reporter_id, target_type, target_id, reason, report_time, " +
+                        "status, handler_id, handle_time, handle_note " +
+                        "FROM reports WHERE status = ? "
+        );
+        if (targetType != null && targetType > 0) {
+            sql.append("AND target_type = ? ");
+        }
+        sql.append("ORDER BY report_time DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+
         try (Connection conn = DBUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, status);
-            ps.setInt(2, offset);
-            ps.setInt(3, size);
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            int paramIndex = 1;
+            ps.setInt(paramIndex++, status);
+            if (targetType != null && targetType > 0) {
+                ps.setInt(paramIndex++, targetType);
+            }
+            ps.setInt(paramIndex++, offset);
+            ps.setInt(paramIndex++, size);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 list.add(extractReport(rs));
             }
         } catch (SQLException e) {
-            log.error("根据状态查询举报列表失败, status={}, page={}, size={}", status, page, size, e);
+            log.error("查询举报列表失败", e);
         }
         return list;
     }
@@ -86,25 +103,52 @@ public class ReportDaoImpl implements ReportDao {
                 return extractReport(rs);
             }
         } catch (SQLException e) {
-            log.error("根据举报ID查询举报失败, reportId={}", reportId, e);
+            log.error("查询举报失败, reportId={}", reportId, e);
         }
         return null;
     }
 
     @Override
-    public int countByStatus(Integer status) {
-        String sql = "SELECT COUNT(*) FROM reports WHERE status = ?";
+    public int countByStatus(Integer status, Integer targetType) {
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM reports WHERE status = ? ");
+        if (targetType != null && targetType > 0) {
+            sql.append("AND target_type = ? ");
+        }
         try (Connection conn = DBUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, status);
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            int paramIndex = 1;
+            ps.setInt(paramIndex++, status);
+            if (targetType != null && targetType > 0) {
+                ps.setInt(paramIndex++, targetType);
+            }
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 return rs.getInt(1);
             }
         } catch (SQLException e) {
-            log.error("根据状态统计举报数量失败, status={}", status, e);
+            log.error("统计举报数量失败", e);
         }
         return 0;
+    }
+
+    @Override
+    public Report findByReporterAndTarget(Integer reporterId, Integer targetType, Integer targetId) {
+        String sql = "SELECT report_id, reporter_id, target_type, target_id, reason, report_time, " +
+                "status, handler_id, handle_time, handle_note FROM reports " +
+                "WHERE reporter_id = ? AND target_type = ? AND target_id = ? AND status = 0";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, reporterId);
+            ps.setInt(2, targetType);
+            ps.setInt(3, targetId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return extractReport(rs);
+            }
+        } catch (SQLException e) {
+            log.error("查询重复举报失败", e);
+        }
+        return null;
     }
 
     private Report extractReport(ResultSet rs) throws SQLException {

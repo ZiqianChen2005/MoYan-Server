@@ -5,16 +5,16 @@ import com.moyan.dao.impl.*;
 import com.moyan.dto.Response;
 import com.moyan.dto.ReplyDTO;
 import com.moyan.entity.*;
-import com.moyan.service.ReplyService;
 import com.moyan.util.StringUtil;
 import org.springframework.stereotype.Service;
-
+import com.moyan.service.ReplyService;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class ReplyServiceImpl implements ReplyService {
-    
     private ReplyDao replyDao = new ReplyDaoImpl();
     private AnonymousMappingDao anonymousDao = new AnonymousMappingDaoImpl();
     private PostDao postDao = new PostDaoImpl();
@@ -112,5 +112,102 @@ public class ReplyServiceImpl implements ReplyService {
             return Response.success(null);
         }
         return Response.fail("审核失败");
+    }
+
+    // 在 ReplyServiceImpl.java 中添加
+    @Override
+    public Response<Map<String, Object>> getRepliesByStatus(Integer status, Integer page, Integer size, String keyword, Integer postId) {
+        if (page == null || page < 1) page = 1;
+        if (size == null || size < 1) size = 10;
+
+        List<Reply> replies;
+        int total;
+
+        if (status == 0) {
+            replies = replyDao.findPendingList(page, size);
+            total = replyDao.countPending();
+        } else {
+            replies = replyDao.findByStatus(status, page, size, keyword, postId);
+            total = replyDao.countByStatus(status, keyword, postId);
+        }
+
+        List<ReplyDTO> result = new ArrayList<>();
+        for (Reply reply : replies) {
+            ReplyDTO dto = new ReplyDTO();
+            dto.setReplyId(reply.getReplyId());
+            dto.setPostId(reply.getPostId());
+            dto.setPostTitle(reply.getPostTitle());
+            dto.setContent(reply.getContent());
+            dto.setReplyTime(reply.getReplyTime());
+            dto.setIsAnonymous(reply.getIsAnonymous());
+            dto.setStatus(reply.getStatus());
+
+            if (reply.getIsAnonymous()) {
+                dto.setAuthorName("匿名用户" + (reply.getAnonymousNum() != null ? " #" + reply.getAnonymousNum() : ""));
+            } else {
+                dto.setAuthorName(reply.getAuthorNickname());
+            }
+            dto.setUserId(reply.getUserId());
+
+            result.add(dto);
+        }
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("list", result);
+        data.put("totalPages", (total + size - 1) / size);
+        data.put("pendingCount", replyDao.countPending());
+
+        return Response.success(data);
+    }
+
+    @Override
+    public Response<Void> batchAudit(String replyIds, Integer status, Integer adminId, String note) {
+        String[] ids = replyIds.split(",");
+        for (String idStr : ids) {
+            try {
+                int replyId = Integer.parseInt(idStr.trim());
+                if (status == 1) {
+                    replyDao.updateStatus(replyId, 1);
+                } else if (status == 2) {
+                    replyDao.updateStatus(replyId, 2);
+                }
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+            }
+        }
+        return Response.success(null);
+    }
+
+    @Override
+    public Response<Map<String, Object>> getReplyDetail(Integer replyId) {
+        Reply reply = replyDao.findByReplyId(replyId);
+        if (reply == null) {
+            return Response.fail("回复不存在");
+        }
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("replyId", reply.getReplyId());
+        data.put("content", reply.getContent());
+        data.put("postTitle", reply.getPostTitle());
+        data.put("postId", reply.getPostId());
+        data.put("isAnonymous", reply.getIsAnonymous());
+        data.put("authorNickname", reply.getAuthorNickname());
+        data.put("replyTime", reply.getReplyTime());
+        data.put("status", reply.getStatus());
+
+        return Response.success(data);
+    }
+
+    @Override
+    public Response<List<Map<String, Object>>> getPostTitles() {
+        List<Map<String, Object>> result = new ArrayList<>();
+        List<Post> posts = postDao.findApprovedList(1, 1000, null, null);
+        for (Post post : posts) {
+            Map<String, Object> item = new HashMap<>();
+            item.put("postId", post.getPostId());
+            item.put("title", post.getTitle());
+            result.add(item);
+        }
+        return Response.success(result);
     }
 }

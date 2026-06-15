@@ -13,7 +13,9 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class PostServiceImpl implements PostService {
@@ -265,5 +267,72 @@ public class PostServiceImpl implements PostService {
         }
         
         return Response.success(result);
+    }
+
+    // 在 PostServiceImpl.java 中添加
+    @Override
+    public Response<Map<String, Object>> getPostsByStatus(Integer status, Integer page, Integer size, String tag, String keyword) {
+        if (page == null || page < 1) page = 1;
+        if (size == null || size < 1) size = 10;
+
+        List<Post> posts;
+        int total = 0;
+
+        if (status == 0) {
+            // 待审核
+            posts = postDao.findPendingList(page, size);
+            total = postDao.countPending();
+        } else if (status == 1) {
+            // 已通过（支持搜索）
+            posts = postDao.findApprovedList(page, size, tag, keyword);
+            total = postDao.countByStatus(1);
+        } else if (status == 2) {
+            // 已拒绝
+            posts = postDao.findByStatus(status, page, size);
+            total = postDao.countByStatus(2);
+        } else if (status == 3) {
+            // 举报待处理
+            posts = postDao.findByStatus(3, page, size);
+            total = postDao.countByStatus(3);
+        } else {
+            posts = new ArrayList<>();
+        }
+
+        List<PostListDTO> result = new ArrayList<>();
+        for (Post post : posts) {
+            PostListDTO dto = new PostListDTO();
+            dto.setPostId(post.getPostId());
+            dto.setTitle(post.getTitle());
+            dto.setContentPreview(StringUtil.truncate(post.getContent(), 100));
+            dto.setContent(post.getContent());
+            dto.setTags(post.getTags());
+            dto.setPostTime(post.getPostTime());
+            dto.setViewCount(post.getViewCount());
+            dto.setIsNewbie(post.getIsNewbie());
+            dto.setStatus(post.getStatus());
+
+            if (post.getIsAnonymous()) {
+                dto.setAuthorName("匿名用户");
+                dto.setIsAnonymous(true);
+            } else {
+                dto.setAuthorName(post.getAuthorNickname());
+                dto.setIsAnonymous(false);
+            }
+            dto.setUserId(post.getUserId());
+
+            result.add(dto);
+        }
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("list", result);
+        data.put("totalPages", (total + size - 1) / size);
+        data.put("pendingCount", postDao.countPending());
+
+        return Response.success(data);
+    }
+
+    @Override
+    public Response<Integer> getPendingCount() {
+        return Response.success(postDao.countPending());
     }
 }

@@ -362,12 +362,35 @@ public class ApiController {
         }
     }
 
-    // ... existing code ...
-
     @RestController
     @RequestMapping("/api/post")
     @Tag(name = "03-帖子管理", description = "帖子发布、查询、搜索、审核相关接口")
     public class PostController {
+        @PostMapping("/admin/pending")
+        @Operation(summary = "获取待审核/已审核帖子列表（管理员）",
+                description = "管理员获取帖子列表，支持按状态筛选")
+        @ApiResponses(value = {
+                @ApiResponse(responseCode = "0", description = "获取成功"),
+                @ApiResponse(responseCode = "1", description = "获取失败")
+        })
+        public String getPostsByStatus(@RequestBody Map<String, Object> request) {
+            Map<String, Object> params = (Map<String, Object>) request.get("params");
+            Integer status = params.get("status") != null ? ((Number) params.get("status")).intValue() : 0;
+            Integer page = params.get("page") != null ? ((Number) params.get("page")).intValue() : 1;
+            Integer size = params.get("size") != null ? ((Number) params.get("size")).intValue() : 10;
+            String tag = (String) params.get("tag");
+            String keyword = (String) params.get("keyword");
+
+            Response<?> resp = postService.getPostsByStatus(status, page, size, tag, keyword);
+            return gson.toJson(resp);
+        }
+
+        @PostMapping("/admin/pending/count")
+        @Operation(summary = "获取待审核帖子数量")
+        public String getPendingCount(@RequestBody Map<String, Object> request) {
+            Response<?> resp = postService.getPendingCount();
+            return gson.toJson(resp);
+        }
 
         @PostMapping("/create")
         @Operation(summary = "发布帖子",
@@ -586,6 +609,52 @@ public class ApiController {
     @Tag(name = "04-回复管理", description = "回复发布、查询、审核相关接口")
     public class ReplyController {
 
+        // 在 ApiController.java 的 ReplyController 类中添加
+
+        @PostMapping("/admin/list")
+        @Operation(summary = "获取回复列表（管理员）")
+        public String getRepliesByStatus(@RequestBody Map<String, Object> request) {
+            Map<String, Object> params = (Map<String, Object>) request.get("params");
+            Integer status = params.get("status") != null ? ((Number) params.get("status")).intValue() : 0;
+            Integer page = params.get("page") != null ? ((Number) params.get("page")).intValue() : 1;
+            Integer size = params.get("size") != null ? ((Number) params.get("size")).intValue() : 10;
+            String keyword = (String) params.get("keyword");
+            Integer postId = params.get("postId") != null ? ((Number) params.get("postId")).intValue() : null;
+
+            Response<?> resp = replyService.getRepliesByStatus(status, page, size, keyword, postId);
+            return gson.toJson(resp);
+        }
+
+        @PostMapping("/admin/batch")
+        @Operation(summary = "批量审核回复")
+        public String batchAuditReplies(@RequestBody Map<String, Object> request) {
+            Map<String, Object> params = (Map<String, Object>) request.get("params");
+            String replyIds = (String) params.get("replyIds");
+            Integer status = ((Number) params.get("status")).intValue();
+            Integer adminId = ((Number) params.get("adminId")).intValue();
+            String note = (String) params.get("note");
+
+            Response<?> resp = replyService.batchAudit(replyIds, status, adminId, note);
+            return gson.toJson(resp);
+        }
+
+        @PostMapping("/admin/detail")
+        @Operation(summary = "获取回复详情（管理员）")
+        public String getReplyDetail(@RequestBody Map<String, Object> request) {
+            Map<String, Object> params = (Map<String, Object>) request.get("params");
+            Integer replyId = ((Number) params.get("replyId")).intValue();
+
+            Response<?> resp = replyService.getReplyDetail(replyId);
+            return gson.toJson(resp);
+        }
+
+        @PostMapping("/post-titles")
+        @Operation(summary = "获取帖子标题列表（用于筛选）")
+        public String getPostTitles(@RequestBody Map<String, Object> request) {
+            Response<?> resp = replyService.getPostTitles();
+            return gson.toJson(resp);
+        }
+
         @PostMapping("/create")
         @Operation(summary = "发布回复",
                 description = "对帖子发布回复，支持匿名，需管理员审核后可见\n\n" +
@@ -774,8 +843,6 @@ public class ApiController {
             return gson.toJson(resp);
         }
     }
-
-    // ... existing code ...
 
     @RestController
     @RequestMapping("/api/task")

@@ -187,4 +187,79 @@ public class ReplyDaoImpl implements ReplyDao {
         } catch (SQLException e) {}
         return reply;
     }
+
+    // 在 ReplyDaoImpl.java 中添加
+    @Override
+    public List<Reply> findByStatus(Integer status, int page, int size, String keyword, Integer postId) {
+        List<Reply> list = new ArrayList<>();
+        int offset = (page - 1) * size;
+
+        StringBuilder sql = new StringBuilder(
+                "SELECT r.*, u.nickname as author_nickname, p.title as post_title " +
+                        "FROM replies r LEFT JOIN users u ON r.user_id = u.user_id " +
+                        "LEFT JOIN posts p ON r.post_id = p.post_id " +
+                        "WHERE r.status = ? "
+        );
+
+        if (postId != null && postId > 0) {
+            sql.append("AND r.post_id = ? ");
+        }
+        if (keyword != null && !keyword.isEmpty()) {
+            sql.append("AND (r.content LIKE ? OR u.nickname LIKE ?) ");
+        }
+        sql.append("ORDER BY r.reply_time DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            int paramIndex = 1;
+            ps.setInt(paramIndex++, status);
+            if (postId != null && postId > 0) {
+                ps.setInt(paramIndex++, postId);
+            }
+            if (keyword != null && !keyword.isEmpty()) {
+                String kw = "%" + keyword + "%";
+                ps.setString(paramIndex++, kw);
+                ps.setString(paramIndex++, kw);
+            }
+            ps.setInt(paramIndex++, offset);
+            ps.setInt(paramIndex++, size);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(extractReply(rs));
+            }
+        } catch (SQLException e) {
+            log.error("根据状态查询回复列表失败", e);
+        }
+        return list;
+    }
+
+    @Override
+    public int countByStatus(Integer status, String keyword, Integer postId) {
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM replies r WHERE r.status = ? ");
+        if (postId != null && postId > 0) {
+            sql.append("AND r.post_id = ? ");
+        }
+        if (keyword != null && !keyword.isEmpty()) {
+            sql.append("AND (r.content LIKE ? ) ");
+        }
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            int paramIndex = 1;
+            ps.setInt(paramIndex++, status);
+            if (postId != null && postId > 0) {
+                ps.setInt(paramIndex++, postId);
+            }
+            if (keyword != null && !keyword.isEmpty()) {
+                ps.setString(paramIndex++, "%" + keyword + "%");
+            }
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            log.error("统计回复数量失败", e);
+        }
+        return 0;
+    }
 }

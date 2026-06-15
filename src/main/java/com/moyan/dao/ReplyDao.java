@@ -12,4 +12,7 @@ public interface ReplyDao {
     int countByPostId(Integer postId);
     int countPending();
     int getAnonymousCount(Integer postId, Integer userId);
+    // 在 ReplyDao.java 中添加
+    List<Reply> findByStatus(Integer status, int page, int size, String keyword, Integer postId);
+    int countByStatus(Integer status, String keyword, Integer postId);
 }
